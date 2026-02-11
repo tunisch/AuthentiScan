@@ -121,19 +121,89 @@ AuthentiScan prioritizes user privacy and data integrity.
 
 ---
 
-## 🛡️ Threat Model & Disclosures
+---
 
-To preserve the integrity of the audit trail, AuthentiScan operates under a strictly defined security model:
+## 🛡️ Threat Model & Security Disclosures
 
-| Risk Factor | Mitigating Evidence |
-| :--- | :--- |
-| **Hash Collisions** | Risk is mathematically negligible using industrial-grade SHA-256 (2^256 space). |
-| **Probabilistic AI** | AI diagnostics are probabilistic; results indicate "Forensic Probability" rather than absolute legal truth. |
-| **Frontend Tampering** | While the UI can be spoofed, the **on-chain anchor** is signed by a verified auditor and remains immutable. |
-| **Data Privacy** | **No video data is stored on-chain.** The ledger only contains anonymous hashes and diagnostic metadata. |
+AuthentiScan operates under a strictly defined security model designed for transparency and risk awareness.
 
-> [!NOTE]
-> **Production Roadmap:** Future iterations will implement multi-signature auditor consensus, rate limiting, and advanced anti-spam mechanisms to ensure ecosystem stability.
+### 🔐 Security Guarantees
+
+#### 1. Client-Side Hashing Only
+- **Privacy:** Video files **never leave the client's browser**. Only the SHA-256 fingerprint is transmitted.
+- **Integrity:** Hashing uses the browser's native `SubtleCrypto` API, resistant to tampering.
+- **No On-Chain Storage:** The blockchain stores only cryptographic hashes and metadata—never raw video data.
+
+#### 2. Blockchain Immutability
+- **Absolute Immutability:** Once anchored to the Stellar ledger, records are **permanent and tamper-proof**.
+- **No Update/Delete:** The smart contract enforces write-once semantics. No `update_verification` function exists.
+- **Cryptographic Authorization:** Every transaction requires a signature from the submitter's wallet (`require_auth`).
+
+#### 3. Global Duplicate Prevention
+- **One Hash, One Truth:** The smart contract enforces global uniqueness at the storage layer.
+- **Idempotent Behavior:** Re-submitting the same video hash returns the existing `record_id` without creating duplicates.
+- **No State Overwrite:** Storage keys use `DataKey::Verification(video_hash)` to prevent collision.
+
+### ⚠️ Known Limitations & Risks
+
+| Risk Factor | Mitigation | Residual Risk |
+|-------------|-----------|---------------|
+| **Hash Collisions** | SHA-256 provides 2^256 address space—collision probability is negligible (< 10^-60) | 🟢 NEGLIGIBLE |
+| **Probabilistic AI** | AI diagnostics are **probabilistic estimates**, not definitive legal proof | 🟡 ACKNOWLEDGED |
+| **Frontend Tampering** | Client UI can be modified, but **on-chain records are authoritative** and cryptographically signed | 🟡 MITIGATED |
+| **Data Privacy** | No video data stored on-chain; only hashes and metadata | 🟢 PROTECTED |
+| **Testnet Keys** | **CRITICAL:** Testnet keys must be rotated before mainnet deployment | 🔴 REQUIRES ACTION |
+| **Rate Limiting** | Current demo lacks anti-spam mechanisms | 🟡 FUTURE WORK |
+
+### 🔑 Key Rotation Requirements
+
+> [!WARNING]
+> **Testnet → Mainnet Migration:**
+> - **NEVER** reuse testnet Stellar keys on mainnet
+> - Generate fresh keys using `stellar keys generate --network mainnet`
+> - Store mainnet keys in secure vaults (e.g., AWS Secrets Manager, HashiCorp Vault)
+> - **NEVER** commit mainnet keys to Git
+
+### 🚀 Production Roadmap
+
+Future production iterations will include:
+- **Multi-Signature Consensus:** Require multiple auditor signatures for high-stakes verifications
+- **Rate Limiting:** Prevent spam and Sybil attacks at the RPC layer
+- **Anti-Spam Mechanisms:** Fee-based submission or proof-of-work challenges
+- **Decentralized Oracles:** Integrate multi-modal AI models via Chainlink or similar
+
+### 🎯 Trust Boundaries
+
+```mermaid
+graph TD
+    subgraph "🔓 Untrusted Zone"
+        U[End User]
+        B[Browser]
+        UI[AuthentiScan UI]
+    end
+    
+    subgraph "🔐 Trusted Periphery"
+        W[Freighter Wallet]
+        RPC[Soroban RPC]
+    end
+    
+    subgraph "⚡ Immutable Core"
+        SC[Smart Contract<br/>Duplicate Guard<br/>Immutable State]
+        L[Stellar Ledger<br/>Permanent Record]
+    end
+    
+    U --> B
+    B --> UI
+    UI -->|SHA-256 Hash| W
+    W -->|Signed TX| RPC
+    RPC --> SC
+    SC -->|Write-Once| L
+    
+    style SC fill:#ff6a00,stroke:#fff,stroke-width:3px
+    style L fill:#10b981,stroke:#fff,stroke-width:3px
+```
+
+**Key Insight:** Only the **Immutable Core** (Smart Contract + Ledger) provides cryptographic guarantees. The client UI is a convenience layer—**always verify on-chain**.
 
 ---
 

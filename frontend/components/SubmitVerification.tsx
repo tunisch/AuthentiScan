@@ -135,6 +135,15 @@ export default function SubmitVerification({
                                 >📋</button>
                             </div>
 
+                            {/* Contract ID Display for Audit Transparency */}
+                            <div style={{
+                                padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px',
+                                fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-tertiary)',
+                                border: '1px solid rgba(255,255,255,0.03)', textAlign: 'center'
+                            }}>
+                                CONTRACT: {process.env.NEXT_PUBLIC_CONTRACT_ID?.slice(0, 8)}...{process.env.NEXT_PUBLIC_CONTRACT_ID?.slice(-8)}
+                            </div>
+
                             <a
                                 href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
                                 target="_blank"
