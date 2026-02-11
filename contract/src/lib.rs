@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Address, BytesN, Env, Vec};
 
 /// Kalıcı ve örnek depolama için depolama anahtarı numaralandırması
 /// Storage key enumeration for persistent and instance storage
@@ -47,7 +47,7 @@ pub struct VerificationRecord {
 
 /// Kontrat işlemleri için özel hata tipleri
 /// Custom error types for contract operations
-#[contracttype]
+#[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {

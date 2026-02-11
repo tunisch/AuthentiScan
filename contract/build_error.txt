@@ -1,0 +1,78 @@
+ use soroban_sdk::contracterror;
+
+ 
+   Compiling video-verification v0.1.0 (C:\Users\tunah\Desktop\block_chain_project\contract)
+error: cannot find attribute `contracterror` in this scope
+  --> src\lib.rs:50:3
+   |
+50 | #[contracterror]
+   |   ^^^^^^^^^^^^^
+   |
+help: consider importing this attribute macro
+   |
+ 3 + use soroban_sdk::contracterror;
+   |
+
+error[E0277]: the trait bound `Error: From<soroban_sdk::Error>` is not satisfied
+  --> src\lib.rs:69:1
+   |
+69 | #[contractimpl]
+   | ^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `From<soroban_sdk::Error>` is not implemented for `Error`
+  --> src\lib.rs:53:1
+   |
+53 | pub enum Error {
+   | ^^^^^^^^^^^^^^
+   = note: required for `soroban_sdk::Error` to implement `Into<Error>`
+   = note: required for `Error` to implement `TryFrom<soroban_sdk::Error>`
+   = note: this error originates in the attribute macro `soroban_sdk::contractclient` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `for<'a> soroban_sdk::Error: From<&'a Error>` is not satisfied
+  --> src\lib.rs:69:1
+   |
+69 | #[contractimpl]
+   | ^^^^^^^^^^^^^^^ the trait `for<'a> From<&'a Error>` is not implemented for `soroban_sdk::Error`
+   |
+   = help: the following other types implement trait `From<T>`:
+             `soroban_sdk::Error` implements `From<&soroban_sdk::Error>`
+             `soroban_sdk::Error` implements `From<(soroban_sdk::xdr::ScErrorType, soroban_sdk::xdr::ScErrorCode)>`
+             `soroban_sdk::Error` implements `From<ConversionError>`
+             `soroban_sdk::Error` implements `From<Infallible>`
+             `soroban_sdk::Error` implements `From<soroban_env_common::symbol::SymbolError>`
+             `soroban_sdk::Error` implements `From<soroban_sdk::xdr::Error>`
+             `soroban_sdk::Error` implements `From<soroban_sdk::xdr::ScError>`
+   = note: required for `&'a Error` to implement `for<'a> Into<soroban_sdk::Error>`
+   = note: required for `soroban_sdk::Error` to implement `for<'a> TryFrom<&'a Error>`
+   = note: required for `soroban_sdk::Val` to implement `TryFromVal<Env, core::result::Result<(), Error>>`
+   = note: required for `soroban_sdk::Val` to implement `FromVal<Env, core::result::Result<(), Error>>`
+   = note: required for `core::result::Result<(), Error>` to implement `IntoVal<Env, soroban_sdk::Val>`
+   = note: this error originates in the attribute macro `contractimpl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: variable does not need to be mutable
+   --> src\lib.rs:216:13
+    |
+216 |         let mut results = Vec::new(&env);
+    |             ----^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `submitter`
+   --> src\lib.rs:212:9
+    |
+212 |         submitter: Address,
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_submitter`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `limit`
+   --> src\lib.rs:214:9
+    |
+214 |         limit: u32,
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_limit`
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `video-verification` (lib) generated 3 warnings
+error: could not compile `video-verification` (lib) due to 3 previous errors; 3 warnings emitted
