@@ -39,7 +39,7 @@ graph TD
 ```
 
 ### 1. Verification Journey
-1.  **Ingestion:** Select a video (locally or via URL). The system performs **Zero-Knowledge Ingestion** where the file stays in your browser.
+1.  **Ingestion:** Select a video (locally or via URL). The system performs client-side ingestion with no raw media transmission. The file remains entirely within your browser environment.
 2.  **Diagnostics:** AI models scan for pixel jitters and spectral deviations.
 3.  **Anchoring:** Sign a transaction via **Freighter Wallet** to store results on-chain.
 4.  **Audit:** Retrieve clinical-grade proof from the Stellar Network at any time using the video hash.
@@ -113,7 +113,7 @@ AuthentiScan prioritizes user privacy and data integrity.
 - **Integrity:** Hashing is performed using the browser's native `SubtleCrypto` API, ensuring resistance against tampering during ingestion.
 
 ### 2. On-Chain Immutability
-- **Hardened Logic:** Once a verification is anchored to the Stellar ledger, it is **absolutely immutable**. The platform does not support "Update" or "Delete" operations for existing truth anchors.
+- **Hardened Logic:** Once a verification is anchored to the Stellar ledger, it becomes economically and cryptographically immutable under Stellar consensus assumptions.
 - **Authorization:** Every transaction requires a cryptographic signature from a verified auditor using the **Freighter Wallet**. Unauthorized submissions are rejected at the protocol level (`require_auth`).
 
 ### 3. Global Unique Protection
@@ -135,9 +135,11 @@ AuthentiScan operates under a strictly defined security model designed for trans
 - **No On-Chain Storage:** The blockchain stores only cryptographic hashes and metadata—never raw video data.
 
 #### 2. Blockchain Immutability
-- **Absolute Immutability:** Once anchored to the Stellar ledger, records are **permanent and tamper-proof**.
+- **Economically** and cryptographically immutable under Stellar consensus assumptions.
 - **No Update/Delete:** The smart contract enforces write-once semantics. No `update_verification` function exists.
 - **Cryptographic Authorization:** Every transaction requires a signature from the submitter's wallet (`require_auth`).
+- **Upgrade Policy:** The current deployment does not implement upgradeability. Any future protocol or contract upgrade would require explicit redeployment and controlled state migration.
+
 
 #### 3. Global Duplicate Prevention
 - **One Hash, One Truth:** The smart contract enforces global uniqueness at the storage layer.
@@ -148,7 +150,7 @@ AuthentiScan operates under a strictly defined security model designed for trans
 
 | Risk Factor | Mitigation | Residual Risk |
 |-------------|-----------|---------------|
-| **Hash Collisions** | SHA-256 provides 2^256 address space—collision probability is negligible (< 10^-60) | 🟢 NEGLIGIBLE |
+| **Hash Collisions** | SHA-256 provides a 2^256 address space. Collision probability is considered computationally infeasible with current cryptographic knowledge. | 🟢NEGLIGIBLE |
 | **Probabilistic AI** | AI diagnostics are **probabilistic estimates**, not definitive legal proof | 🟡 ACKNOWLEDGED |
 | **Frontend Tampering** | Client UI can be modified, but **on-chain records are authoritative** and cryptographically signed | 🟡 MITIGATED |
 | **Data Privacy** | No video data stored on-chain; only hashes and metadata | 🟢 PROTECTED |
@@ -171,6 +173,8 @@ Future production iterations will include:
 - **Rate Limiting:** Prevent spam and Sybil attacks at the RPC layer
 - **Anti-Spam Mechanisms:** Fee-based submission or proof-of-work challenges
 - **Decentralized Oracles:** Integrate multi-modal AI models via Chainlink or similar
+- **Formal Security Audit:** Mainnet deployment will require independent smart contract audit and security review.
+
 
 ### 🎯 Trust Boundaries
 
