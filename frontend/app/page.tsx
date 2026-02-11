@@ -16,12 +16,11 @@ interface HistoryItem {
 }
 
 export default function Home() {
-  const { address, sign, connect, isConnected } = useWallet();
+  const { address, sign, connect, isConnected, isLoading: isWalletLoading } = useWallet();
   const [videoHash, setVideoHash] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Workflow State: 0=Upload, 1=Analysis, 2=Anchor, 3=Audit
@@ -71,6 +70,7 @@ export default function Home() {
     try {
       await connect();
     } catch (err) {
+      console.warn("Redirection to Freighter download page...");
       window.open('https://www.freighter.app/', '_blank');
     }
   };
@@ -115,16 +115,11 @@ export default function Home() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
           <div style={{ display: 'flex', gap: '32px' }}>
             <a href="#history" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '13px', letterSpacing: '1px' }}>HISTORY_LOG</a>
-            <button
-              onClick={() => setIsProModalOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--brand-orange)', fontWeight: '800', fontSize: '13px', cursor: 'pointer', letterSpacing: '1px' }}
-            >
-              UPGRADE_PRO
-            </button>
           </div>
           <button
             onClick={address ? undefined : handleConnect}
             className={!address ? "btn-premium" : ""}
+            disabled={isWalletLoading}
             style={{
               background: address ? 'rgba(255,255,255,0.05)' : undefined,
               color: address ? 'var(--text-primary)' : undefined,
@@ -139,7 +134,7 @@ export default function Home() {
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 8px var(--success)' }}></div>
                 {address.slice(0, 4)}...{address.slice(-4)}
               </div>
-            ) : 'CONNECT_WALLET'}
+            ) : isWalletLoading ? 'CONNECTING...' : 'CONNECT_WALLET'}
           </button>
         </div>
       </nav>
@@ -347,16 +342,10 @@ export default function Home() {
       <footer style={{ background: '#000', padding: '100px 60px', borderTop: '1px solid rgba(255, 106, 0, 0.2)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h2 style={{ fontWeight: '950', fontSize: '24px', color: 'white', marginBottom: '8px' }}>AUTHENTISCAN</h2>
-            <p style={{ color: 'var(--text-tertiary)', fontSize: '14px', fontWeight: '600' }}>Next-generation video authenticity verification.</p>
-            <div style={{ display: 'flex', gap: '20px', marginTop: '32px' }}>
-              <FooterLink text="Documentation" />
-              <FooterLink text="API Status" />
-              <FooterLink text="Privacy" />
-            </div>
+            <h2 style={{ fontWeight: '950', fontSize: '24px', color: 'white', marginBottom: '32px' }}>AUTHENTISCAN</h2>
             {/* Critical Performance & Risk Disclaimer */}
-            <p style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic', maxWidth: '400px' }}>
-              AI analysis is probabilistic and does not constitute definitive proof of authenticity. Final judgment should be supported by multi-modal forensic evidence.
+            <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontStyle: 'italic', maxWidth: '500px', lineHeight: '1.6' }}>
+              AI analysis is probabilistic and does not constitute definitive proof of authenticity. Final judgment should be supported by multi-modal forensic evidence. Powered by Stellar Network Immutable Ledger.
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -381,28 +370,6 @@ export default function Home() {
       >
         ↑
       </button>
-
-      {/* Pro Modal */}
-      {isProModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.9)', zIndex: 2000, display: 'flex',
-          alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(20px)'
-        }} onClick={() => setIsProModalOpen(false)}>
-          <div className="glass-card" style={{ maxWidth: '540px', width: '90%', padding: '48px' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginBottom: '16px' }}>UPGRADE_TO_PRO</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: '1.6' }}>Unlock industrial-grade features for media enterprises and forensic laboratories.</p>
-            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '48px' }}>
-              <ModalItem text="Batch Forensic Processing" />
-              <ModalItem text="Priority AI Compute Nodes" />
-              <ModalItem text="Web3 API Access Key" />
-            </ul>
-            <button className="btn-premium" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setIsProModalOpen(false)}>
-              Join Waitlist
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
@@ -441,7 +408,7 @@ function FeatureItem({ icon, title, desc }: { icon: string; title: string; desc:
 
 function SocialCard({ href, title, label, icon, color }: any) {
   return (
-    <a href={href} target="_blank" style={{ textDecoration: 'none', transition: '0.3s' }}>
+    <a href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', transition: '0.3s' }}>
       <div className="glass-card" style={{ padding: '32px 48px', minWidth: '240px' }}>
         <div style={{ fontSize: '40px', marginBottom: '16px' }}>{icon}</div>
         <p style={{ color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: '800', letterSpacing: '1px', marginBottom: '4px' }}>{label}</p>

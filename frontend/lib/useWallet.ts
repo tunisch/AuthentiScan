@@ -59,9 +59,11 @@ export function useWallet(): WalletState {
 
         try {
             // 1. Freighter yüklü mü kontrol et
+            // Check if Freighter is installed
             const connected = await freighterIsConnected();
-            if (!connected.isConnected) {
-                throw new Error('Freighter wallet not detected. Please install Freighter extension.');
+            if (!connected || !connected.isConnected) {
+                // Return a specific error for missing extension
+                throw new Error('FREIGHTER_NOT_INSTALLED');
             }
 
             // 2. Erişim izni iste / Request access
@@ -77,20 +79,17 @@ export function useWallet(): WalletState {
             }
 
             // 4. Ağ bilgisini al ve testnet doğrula
-            //    Get network info and validate testnet
             const netResult = await getNetwork();
             setNetwork(netResult.network || null);
 
-            if (netResult.network && netResult.network !== 'TESTNET') {
-                console.warn('⚠️ Wallet is not on TESTNET. Current:', netResult.network);
-            }
-
             setAddress(addrResult.address);
             setIsConnected(true);
+            setError(null);
             console.log('✅ Wallet connected:', addrResult.address);
         } catch (err: any) {
             console.error('Wallet connection error:', err);
             setError(err.message || 'Failed to connect wallet');
+            throw err; // Re-throw so page.tsx catch block can handle redirect
         } finally {
             setIsLoading(false);
         }
