@@ -34,9 +34,26 @@ export const server = new rpc.Server(SOROBAN_RPC_URL);
 /**
  * Hex string'i BytesN<32> ScVal'e dönüştür
  * Convert hex string to BytesN<32> ScVal
+ * 
+ * CRITICAL: Strips '0x' prefix if present to ensure proper conversion
  */
 function hashToScVal(hexHash: string): xdr.ScVal {
-    const bytes = Buffer.from(hexHash, 'hex');
+    // Strip '0x' prefix if present
+    const cleanHash = hexHash.startsWith('0x') ? hexHash.slice(2) : hexHash;
+
+    // Debug logging
+    console.log('[hashToScVal] Input:', hexHash);
+    console.log('[hashToScVal] Cleaned:', cleanHash);
+    console.log('[hashToScVal] Length:', cleanHash.length, '(expected: 64)');
+
+    if (cleanHash.length !== 64) {
+        console.error('[hashToScVal] Invalid hash length!', cleanHash.length);
+        throw new Error(`Invalid hash length: ${cleanHash.length}, expected 64 hex characters`);
+    }
+
+    const bytes = Buffer.from(cleanHash, 'hex');
+    console.log('[hashToScVal] Bytes length:', bytes.length, '(expected: 32)');
+
     return xdr.ScVal.scvBytes(bytes);
 }
 
