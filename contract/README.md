@@ -1,139 +1,73 @@
-# Video Verification Smart Contract (Soroban)
+# 📜 AuthentiScan: Soroban Smart Contract
 
-A Stellar Soroban smart contract for storing immutable video verification records on-chain.
+The core logic of the AuthentiScan platform, implemented as a secure, persistent smart contract on the Stellar network.
 
-## Overview
+## 🏛️ Architecture
 
-This contract enables users to submit AI-generated video verification results to the blockchain, creating a transparent and tamper-proof audit trail for video authenticity.
+This contract is written in **Rust** using the **Soroban SDK**. It serves as an immutable truth repository for video verification records.
 
-## Architecture
+### Persistence Strategy
+- **Type:** Persistent Storage (Instance & Metadata)
+- **Composite Keys:** Records are keyed by a combination of `Video Hash` + `Submitter Address`, ensuring data integrity and uniqueness per auditor.
+- **Auto-Incrementing Global Buffer:** A `VerificationCount` is maintained to support efficient global audit indexing and statistical reporting.
 
-### Storage Design
-
-**Persistent Storage** (long-term, survives contract upgrades):
-- Individual verification records (composite key: video_hash + submitter)
-- Global verification count
-
-**TTL (Time To Live)**: 1 year (~6.3M ledgers)
-
-### Data Structures
-
+### Data Model
 ```rust
-struct VerificationRecord {
-    video_hash: BytesN<32>,      // SHA-256 hash of video
-    submitter: Address,           // Wallet that submitted
-    is_ai_generated: bool,        // AI analysis result
-    confidence_score: u32,        // 0-100 percentage
-    timestamp: u64,               // Ledger timestamp
+pub struct VerificationRecord {
+    pub video_hash: BytesN<32>,      // SHA-256 fingerprint
+    pub submitter: Address,           // Verified auditor address
+    pub is_ai_generated: boolean,     // AI Engine verdict
+    pub confidence_score: u32,        // Probability index (0-100)
+    pub timestamp: u64,               // Ledger anchor time
 }
 ```
 
-## Contract Functions
+---
 
-### Write Functions
+## 🛠️ Interface (Public Functions)
 
-#### `submit_verification`
-Submit a new video verification result.
+### `submit_verification`
+Anchors a forensic verdict to the ledger.
+- **Auth:** Requires submitter signature (`submitter.require_auth()`).
+- **Validation:** Enforces constraints on confidence scores and prevents duplicate anchors for the same video/auditor pair.
 
-**Parameters:**
-- `submitter: Address` - Wallet address (must sign transaction)
-- `video_hash: BytesN<32>` - SHA-256 hash of video
-- `is_ai_generated: bool` - AI analysis result
-- `confidence_score: u32` - Confidence percentage (0-100)
+### `get_verification`
+Retrieves an immutable proof record from the ledger using the video's cryptographic fingerprint.
 
-**Authentication:** Requires `submitter.require_auth()`
+### `get_verification_count`
+Provides real-time statistics on the total number of verifications anchored to the network.
 
-**Errors:**
-- `InvalidConfidence` - Score > 100
-- `DuplicateVerification` - Hash already verified by this user
-- `Unauthorized` - Authentication failed
+---
 
-#### `update_verification`
-Update confidence score of existing verification.
+## 🧪 Testing & Validation
 
-**Parameters:**
-- `submitter: Address` - Original submitter (must sign)
-- `video_hash: BytesN<32>` - Hash to update
-- `new_confidence: u32` - New score (0-100)
-
-**Authentication:** Requires `submitter.require_auth()`
-
-**Errors:**
-- `NotFound` - Verification doesn't exist
-- `InvalidConfidence` - Score > 100
-- `Unauthorized` - Authentication failed
-
-### Read Functions
-
-#### `get_verification`
-Retrieve a specific verification record.
-
-**Parameters:**
-- `video_hash: BytesN<32>` - Video hash to query
-- `submitter: Address` - Submitter address
-
-**Returns:** `Option<VerificationRecord>`
-
-#### `get_verification_count`
-Get total number of verifications.
-
-**Returns:** `u32`
-
-#### `get_verifications_by_submitter`
-Get all verifications by a specific submitter (paginated).
-
-**Parameters:**
-- `submitter: Address` - Address to query
-- `start: u32` - Starting index
-- `limit: u32` - Max results
-
-**Returns:** `Vec<VerificationRecord>`
-
-**Note:** Current implementation returns empty vector. For production, implement event-based indexing or maintain submitter -> hash mappings.
-
-## Building
+The contract environment includes a comprehensive test suite covering edge cases, authorization logic, and state transitions.
 
 ```bash
-# Build optimized WASM
+# Execute forensic contract tests
+cargo test
+```
+
+**Test Coverage:**
+- ✅ **Deterministic Retrieval:** Verified lookups for existing records.
+- ✅ **Unauthorized Access Prevention:** Validated `require_auth` enforcement.
+- ✅ **Boundary Enforcement:** Restricted confidence scores to the [0, 100] range.
+- ✅ **Duplicate Rejection:** Ensured hash/auditor uniqueness on-chain.
+
+---
+
+## 🏗️ Build & Deploy
+
+```bash
+# Compile to optimized WebAssembly
 stellar contract build
 
-# Optimize WASM size
-stellar contract optimize --wasm target/wasm32-unknown-unknown/release/video_verification.wasm
+# Deploy to Stellar Testnet
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
+  --source deployer \
+  --network testnet
 ```
 
-## Testing
-
-```bash
-# Run unit tests
-cargo test
-
-# Run with output
-cargo test -- --nocapture
-```
-
-## Deployment
-
-See main project README for deployment instructions.
-
-## Security Features
-
-- **Authentication**: All write operations require wallet signature
-- **Duplicate Prevention**: Composite key (hash + submitter) prevents re-submission
-- **Data Integrity**: Immutable records with timestamps
-- **Access Control**: Only submitter can update their verifications
-
-## Storage Costs
-
-- Per verification: ~200 bytes
-- TTL: 1 year (renewable)
-- Estimated cost: Minimal on testnet (free), ~0.0001 XLM on mainnet
-
-## Limitations (Academic MVP)
-
-- `get_verifications_by_submitter` requires client-side tracking or event indexing
-- No built-in pagination index (would require additional storage structure)
-- No dispute/challenge mechanism (future enhancement)
-
-## License
-
-MIT
+---
+© 2026 AuthentiScan Lab. Forensic-grade permanence via Soroban.

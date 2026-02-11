@@ -1,91 +1,69 @@
-# Video Verification dApp - Frontend
+# 🖥️ AuthentiScan: Trust Infrastructure Frontend
 
-Next.js 14 frontend for AI video verification on Stellar blockchain.
+The high-performance, investor-ready user interface for the AuthentiScan platform. Built on **Next.js 14**, it provides a seamless bridge between AI forensics and blockchain anchoring.
 
-## Status
+## 🚀 High-End Features
 
-✅ **Phase 1 Complete: UI Flow (No Wallet/Blockchain)**
+- **AI Lab Visualizations:** Circular confidence meters, frame-by-frame heatmap grids, and audio spectrogram simulations.
+- **Immutable Ledger Integration:** Full-cycle interaction with Stellar Soroban contracts via the Stellar SDK and Freighter Wallet.
+- **Trust Telemetry:** Real-time transaction state tracking (Signing → Broadcasting → Confirming) with integrated block explorer links.
+- **GPU-Accelerated UX:** Cinematic dark mode with 60fps glassmorphism animations and responsive layout architecture.
 
-- Video upload and hash calculation
-- Mock AI analysis
-- UI components with minimalist design
-- Ready for Freighter integration
+---
 
-## Tech Stack
+## 🛠️ Technical Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Wallet**: Freighter (next phase)
-- **Blockchain**: Stellar Testnet (next phase)
+- **Framework:** Next.js 14 (App Router)
+- **Engine:** React & TypeScript
+- **Styling:** Premium Vanilla CSS (GPU optimized)
+- **SDK:** `@stellar/stellar-sdk` & `@stellar/freighter-api`
+- **Security:** In-browser SHA-256 hashing via `crypto.subtle`
 
-## Project Structure
+---
 
-```
-frontend/
-├── app/
-│   └── page.tsx              # Main page
-├── components/
-│   ├── WalletConnect.tsx     # Placeholder (no wallet yet)
-│   ├── VideoUpload.tsx       # Video selection & hash
-│   ├── AnalysisResult.tsx    # Display AI result
-│   └── SubmitVerification.tsx # Mock blockchain submit
-├── lib/
-│   ├── hash.ts               # SHA-256 video hashing
-│   └── mockAi.ts             # Fake AI analysis
+## 🏛️ Local Environment
+
+### 1. Configuration
+Create a `.env.local` file in the root of the `/frontend` directory:
+```env
+NEXT_PUBLIC_CONTRACT_ID=YOUR_SOROBAN_CONTRACT_ID
+NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 ```
 
-## Running Locally
-
+### 2. Development
 ```bash
 # Install dependencies
 npm install
 
-# Run development server
+# Launch dev server
 npm run dev
-
-# Open http://localhost:3000
 ```
-
-## Features
-
-### ✅ Implemented
-- Video file upload (MP4, MOV, AVI)
-- SHA-256 hash calculation
-- Mock AI analysis (heuristic-based)
-- Analysis result display
-- Mock blockchain submission
-
-### ❌ Not Yet Implemented (By Design)
-- Freighter wallet connection
-- Real blockchain interaction
-- Contract invocation
-- Transaction signing
-
-## User Flow
-
-1. User uploads video file
-2. System calculates SHA-256 hash
-3. Mock AI analyzes video (simulated)
-4. Results displayed (AI-generated? Confidence score)
-5. User clicks "Submit" (console.log for now)
-
-## Next Phase
-
-- Freighter wallet integration
-- Stellar SDK setup
-- Contract interaction layer
-- Real blockchain submission
-
-## Design Philosophy
-
-Minimalist, brutalist design:
-- Black borders
-- White backgrounds
-- Monospace fonts
-- No unnecessary styling
-- Focus on functionality
 
 ---
 
-**Current Status**: Frontend skeleton complete, ready for wallet integration.
+## 🧪 Validation Suite
+
+The frontend includes a rigorous test suite to ensure the integrity of cryptographic operations and UI state transitions.
+
+```bash
+# Run validation scripts
+node tests/validate.mjs
+```
+
+**Key Areas Tested:**
+- **Hashing Determinism:** Verified SHA-256 consistency against known vectors.
+- **Workflow Integrity:** Validated state transitions from file receipt to ledger confirmation.
+- **Simulation Accuracy:** Confirmed AI mock engine heuristic alignment.
+- **Stellar SDK Connectivity:** Validated RPC and Contract interaction patterns.
+
+---
+
+## 🛡️ Trust Infrastructure Integrity
+
+AuthentiScan is designed to prioritize **epistemic safety**. 
+- **Privacy:** Video data never leaves the client; only fingerprints are submitted.
+- **Transparency:** All blockchain transactions provide direct links to independent explorers for verification.
+- **Governance:** Integrated forensic warnings and technical disclosure panels ensure responsible reporting.
+
+---
+© 2026 AuthentiScan Lab. Decoding reality, one block at a time.
