@@ -10,110 +10,79 @@ interface AnalysisResultProps {
 }
 
 export default function AnalysisResult({ analysis, videoHash }: AnalysisResultProps) {
+    const statusColor = analysis.is_ai_generated ? 'var(--error)' : 'var(--success)';
+
     return (
-        <div className="glass" style={{
-            padding: 'var(--spacing-lg)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--glass-border)',
+        <div className="retro-panel" style={{
+            position: 'relative',
+            overflow: 'hidden',
         }}>
-            <h3 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                marginBottom: 'var(--spacing-md)',
-                color: 'var(--text-primary)',
-            }}>
-                Analysis Result
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 className="text-neon" style={{ fontSize: '20px', fontWeight: '900' }}>
+                    // SCAN_REPORT_OUTPUT
+                </h3>
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-                {/* Video Hash */}
-                <div>
-                    <p style={{
-                        fontSize: '12px',
-                        color: 'var(--text-tertiary)',
-                        marginBottom: '4px',
-                    }}>
-                        Video Hash
-                    </p>
-                    <p style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '14px',
-                        color: 'var(--text-secondary)',
-                        wordBreak: 'break-all',
-                    }}>
-                        {videoHash.slice(0, 16)}...{videoHash.slice(-16)}
-                    </p>
-                </div>
-
-                {/* AI Generated */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Result Indicator - High Contrast */}
                 <div style={{
-                    padding: 'var(--spacing-md)',
-                    borderRadius: 'var(--radius-md)',
-                    background: analysis.is_ai_generated
-                        ? 'rgba(255, 69, 58, 0.1)'
-                        : 'rgba(48, 209, 88, 0.1)',
-                    border: `1px solid ${analysis.is_ai_generated ? 'var(--error)' : 'var(--success)'}`,
+                    padding: '30px',
+                    background: '#0a0a0a',
+                    borderLeft: `5px solid ${statusColor}`,
+                    borderRight: `5px solid ${statusColor}`,
+                    textAlign: 'center',
+                    boxShadow: `inset 0 0 20px ${statusColor}33`,
                 }}>
+                    <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '5px', letterSpacing: '2px' }}>VERDICT</p>
                     <p style={{
-                        fontSize: '12px',
-                        color: 'var(--text-tertiary)',
-                        marginBottom: '4px',
+                        fontSize: '32px',
+                        fontWeight: '950',
+                        color: statusColor,
+                        textShadow: `0 0 15px ${statusColor}`,
+                        margin: 0,
+                        textTransform: 'uppercase'
                     }}>
-                        AI Generated
-                    </p>
-                    <p style={{
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        color: analysis.is_ai_generated ? 'var(--error)' : 'var(--success)',
-                    }}>
-                        {analysis.is_ai_generated ? '⚠️ Yes' : '✓ No'}
+                        {analysis.is_ai_generated ? 'AI_GENERATED_DETECTED' : 'AUTHENTIC_DATA_STREAM'}
                     </p>
                 </div>
 
-                {/* Confidence Score */}
+                {/* Confidence Meter */}
                 <div>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '8px',
-                    }}>
-                        <p style={{
-                            fontSize: '12px',
-                            color: 'var(--text-tertiary)',
-                        }}>
-                            Confidence Score
-                        </p>
-                        <p style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: 'var(--text-primary)',
-                        }}>
-                            {analysis.confidence_score}%
-                        </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                        <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--accent-cyan)' }}>PROBABILITY_ACCURACY</p>
+                        <p style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-primary)' }}>{analysis.confidence_score}.00%</p>
                     </div>
                     <div style={{
-                        height: '8px',
-                        borderRadius: '4px',
-                        background: 'var(--bg-tertiary)',
-                        overflow: 'hidden',
+                        height: '15px',
+                        background: '#000',
+                        border: '1px solid #333',
+                        position: 'relative'
                     }}>
                         <div style={{
                             height: '100%',
                             width: `${analysis.confidence_score}%`,
-                            background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-violet) 100%)',
-                            transition: 'width 0.8s ease-out',
+                            background: statusColor,
+                            boxShadow: `0 0 10px ${statusColor}`,
+                            transition: 'width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                         }} />
                     </div>
                 </div>
 
-                {/* Analysis Time */}
-                <p style={{
-                    fontSize: '12px',
-                    color: 'var(--text-tertiary)',
-                    fontFamily: 'var(--font-mono)',
+                {/* Metadata - Retro Grid */}
+                <div style={{
+                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: '#333', border: '1px solid #333'
                 }}>
-                    Analysis completed in {analysis.analysis_time_ms}ms
-                </p>
+                    <div style={{ background: '#000', padding: '15px' }}>
+                        <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '5px' }}>TIME_LAPSE</p>
+                        <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--accent-cyan)' }}>{analysis.analysis_time_ms} ms</p>
+                    </div>
+                    <div style={{ background: '#000', padding: '15px' }}>
+                        <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '5px' }}>DATA_DIGEST</p>
+                        <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                            {videoHash.slice(0, 8).toUpperCase()}
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
