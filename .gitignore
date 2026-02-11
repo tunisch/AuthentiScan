@@ -236,6 +236,7 @@ transaction-history/
 docs/build/
 docs/.docusaurus/
 .docusaurus/
+docs/assets/
 
 # ============================================================================
 # 🎯 PROJECT-SPECIFIC EXCEPTIONS
