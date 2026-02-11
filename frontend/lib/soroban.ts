@@ -27,7 +27,7 @@ const NETWORK_PASSPHRASE = Networks.TESTNET;
 const SOROBAN_RPC_URL = process.env.NEXT_PUBLIC_SOROBAN_RPC_URL || 'https://soroban-testnet.stellar.org';
 const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || '';
 
-const server = new rpc.Server(SOROBAN_RPC_URL);
+export const server = new rpc.Server(SOROBAN_RPC_URL);
 
 // --- Helpers ---
 
@@ -280,4 +280,46 @@ export async function getVerificationCount(
     if (!retval) return 0;
 
     return scValToNative(retval) as number;
+}
+/**
+ * Fetch the latest 'submit' events from the contract
+ * Acts as a real-time listener for the frontend
+ */
+export async function getLatestEvents() {
+    if (!CONTRACT_ID) return [];
+
+    try {
+        const latestLedgerResponse = await server.getLatestLedger();
+        // Look back ~2000 ledgers (~3 hours) to find recent activity
+        const startLedger = Math.max(0, latestLedgerResponse.sequence - 2000);
+
+        const response = await server.getEvents({
+            startLedger,
+            filters: [
+                {
+                    type: 'contract',
+                    contractIds: [CONTRACT_ID],
+                    topics: [
+                        [xdr.ScVal.scvSymbol('submit').toXDR('base64')]
+                    ]
+                }
+            ],
+            limit: 10
+        });
+
+        return response.events.map(event => {
+            const body = xdr.ScVal.fromXDR(event.value as unknown as string, 'base64');
+            const data = scValToNative(body);
+            return {
+                id: event.id,
+                ledger: event.ledger,
+                recordId: Number(data[0]),
+                videoHash: Buffer.from(data[1]).toString('hex'),
+                submitter: data[2].toString()
+            };
+        });
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        return [];
+    }
 }

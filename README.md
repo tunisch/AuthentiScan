@@ -69,6 +69,39 @@ graph LR
     FA --> FL
     FL <--> RS
 ```
+---
+
+## 🌐 System Boundary Diagram
+
+The system boundary illustrates the trust perimeter. Authentiscan acts as a thin, non-custodial gateway between the user's private media and the public ledger.
+
+```mermaid
+graph TD
+    subgraph "Trust Boundary (User Environment)"
+        U[End User]
+        F[Video File]
+        C[Authentiscan Client]
+        H[SHA-256 Hash]
+    end
+    
+    subgraph "External Periphery"
+        W[Freighter Wallet]
+        R[Soroban RPC]
+    end
+
+    subgraph "Immutable Core"
+        S[Smart Contract]
+        L[Stellar Ledger]
+    end
+
+    U --> F
+    F --> C
+    C --> H
+    H --> W
+    W --> R
+    R --> S
+    S --> L
+```
 
 ---
 

@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Address, BytesN, Env, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, symbol_short, Address, BytesN, Env, Vec, Symbol};
 
 /// Kalıcı ve örnek depolama için depolama anahtarı numaralandırması
 /// Storage key enumeration for persistent and instance storage
@@ -137,6 +137,13 @@ impl VideoVerificationContract {
         // Sayacı güncelle
         env.storage().persistent().set(&count_key, &new_id);
         env.storage().persistent().extend_ttl(&count_key, 6_307_200, 6_307_200);
+
+        // EVENT EMISSION: Zincir dışı dinleyiciler için olay yayınla
+        // EVENT EMISSION: Publish event for off-chain listeners
+        env.events().publish(
+            (symbol_short!("submit"),),
+            (new_id, video_hash.clone(), submitter.clone())
+        );
 
         Ok(new_id)
     }
