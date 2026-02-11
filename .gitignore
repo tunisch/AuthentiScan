@@ -1,18 +1,258 @@
-# Rust / Contract
-contract/target/
-contract/*.wasm
+# ============================================================================
+# AUTHENTISCAN MONOREPO - PRODUCTION .gitignore
+# ============================================================================
+# Blockchain-grade security: Prevents accidental commits of secrets, keys,
+# build artifacts, and deployment credentials.
+# ============================================================================
 
-# Node / Frontend
+# ============================================================================
+# 🔐 SECURITY-CRITICAL: SECRETS & CREDENTIALS
+# ============================================================================
+# NEVER commit these files - they contain private keys and deployment secrets
+
+# Stellar/Soroban wallet keys and seeds
+*.pem
+*.key
+*.seed
+*.secret
+*-secret.txt
+identity.json
+.soroban/identity/
+
+# Environment variables (may contain contract IDs, RPC URLs, API keys)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Freighter wallet exports
+freighter-*.json
+wallet-backup-*.json
+
+# ============================================================================
+# 🦀 RUST / SOROBAN SMART CONTRACT
+# ============================================================================
+
+# Cargo build artifacts
+contract/target/
+**/target/
+**/*.rs.bk
+Cargo.lock  # Include this if library; exclude if binary
+
+# WASM binaries (regenerate from source)
+*.wasm
+*.optimized.wasm
+
+# Soroban CLI artifacts
+.soroban/
+.soroban-ledger/
+contract/.soroban/
+
+# Rust profiling and coverage
+*.profraw
+*.profdata
+contract/coverage/
+
+# ============================================================================
+# ⚛️ NODE.JS / NEXT.JS FRONTEND
+# ============================================================================
+
+# Dependencies
 frontend/node_modules/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js build output
 frontend/.next/
 frontend/out/
-frontend/.env.local
+.next/
+out/
 
-# OS
-.DS_Store
-Thumbs.db
+# Production build
+frontend/build/
+build/
+dist/
 
-# IDE
+# Next.js cache
+frontend/.next/cache/
+.next/cache/
+
+# Turbopack cache (Next.js 13+)
+.turbo/
+
+# Package manager lock files (choose one strategy)
+# Option 1: Commit lock files for reproducible builds (RECOMMENDED)
+# Option 2: Ignore them (uncomment below)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================================================
+# 🧪 TESTING & COVERAGE
+# ============================================================================
+
+# Test coverage reports
+coverage/
+*.lcov
+.nyc_output/
+frontend/coverage/
+contract/coverage/
+
+# Jest cache
+.jest/
+frontend/.jest/
+
+# Playwright artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ============================================================================
+# 🗂️ IDE & EDITOR CONFIGURATIONS
+# ============================================================================
+
+# VSCode
 .vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains IDEs (IntelliJ, WebStorm, RustRover)
 .idea/
+*.iml
+*.iws
+
+# Vim
 *.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================================
+# 🖥️ OPERATING SYSTEM FILES
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# ============================================================================
+# 📊 LOGS & TEMPORARY FILES
+# ============================================================================
+
+# Application logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+tmp/
+
+# ============================================================================
+# 🚀 DEPLOYMENT & CI/CD
+# ============================================================================
+
+# Vercel (Next.js deployment)
+.vercel
+.vercel.json
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Terraform state (if using IaC)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# ============================================================================
+# 📦 MONOREPO & BUILD TOOLS
+# ============================================================================
+
+# Turborepo cache
+.turbo/
+
+# Nx cache
+.nx/
+
+# Build artifacts
+*.tsbuildinfo
+.build/
+
+# ============================================================================
+# 🔬 BLOCKCHAIN-SPECIFIC
+# ============================================================================
+
+# Local blockchain state
+.soroban-ledger/
+ledger-state/
+
+# Contract deployment receipts (may contain sensitive data)
+deployment-*.json
+contract-id-*.txt
+
+# Transaction logs
+tx-*.json
+transaction-history/
+
+# ============================================================================
+# 📝 DOCUMENTATION BUILD
+# ============================================================================
+
+# Generated documentation
+docs/build/
+docs/.docusaurus/
+.docusaurus/
+
+# ============================================================================
+# 🎯 PROJECT-SPECIFIC EXCEPTIONS
+# ============================================================================
+
+# Keep example environment file as template
+!.env.example
+!.env.template
+
+# Keep CI/CD configuration
+!.github/
+!.gitlab-ci.yml
+
+# Keep Docker configuration templates
+!Dockerfile
+!docker-compose.yml
+
+# ============================================================================
+# END OF .gitignore
+# ============================================================================
