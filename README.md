@@ -12,6 +12,7 @@ AuthentiScan is an industrial-grade **"Truth Anchor"** platform that converges *
 ## 📺 System Preview
 
 ![AuthentiScan Hero Preview](docs/assets/hero-preview.png)
+
 *The AuthentiScan Dashboard: Real-time telemetry meets cryptographic reliability.*
 
 ---
