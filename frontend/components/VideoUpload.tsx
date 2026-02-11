@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { calculateVideoHash, isVideoFile } from '@/lib/hash';
 import { analyzeVideo, analyzeVideoUrl } from '@/lib/mockAi';
 import { calculateUrlHash, isValidUrl } from '@/lib/urlHash';
@@ -16,19 +16,35 @@ type UploadMode = 'file' | 'url';
 export default function VideoUpload({ onHashed, onAnalyzed, isConnected }: VideoUploadProps) {
     const [mode, setMode] = useState<UploadMode>('file');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string>('');
     const [url, setUrl] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Simulated Progress Logic
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isProcessing) {
+            setProgress(0);
+            interval = setInterval(() => {
+                setProgress(prev => {
+                    if (prev >= 95) return prev;
+                    return prev + Math.random() * 15;
+                });
+            }, 300);
+        } else {
+            setProgress(0);
+        }
+        return () => clearInterval(interval);
+    }, [isProcessing]);
 
     const handleFile = async (file: File) => {
-        if (!isConnected) {
-            setError('Please connect your wallet to analyze content');
-            return;
-        }
+        if (!isConnected) return;
         setError('');
         if (!file) return;
 
         if (!isVideoFile(file)) {
-            setError('Incompatible format. Select valid video.');
+            setError('Incompatible format. Please select a valid video file.');
             return;
         }
 
@@ -38,9 +54,10 @@ export default function VideoUpload({ onHashed, onAnalyzed, isConnected }: Video
             const hash = await calculateVideoHash(file);
             onHashed(hash);
             const result = await analyzeVideo(file);
-            onAnalyzed(result);
+            setProgress(100);
+            setTimeout(() => onAnalyzed(result), 400);
         } catch (err) {
-            setError('Analysis failed');
+            setError('Analysis failed. Please try again.');
             console.error(err);
         } finally {
             setIsProcessing(false);
@@ -48,13 +65,10 @@ export default function VideoUpload({ onHashed, onAnalyzed, isConnected }: Video
     };
 
     const handleUrl = async () => {
-        if (!isConnected) {
-            setError('Connect wallet to use URL analysis');
-            return;
-        }
+        if (!isConnected) return;
         setError('');
         if (!url.trim() || !isValidUrl(url)) {
-            setError('Invalid URL provided');
+            setError('Please provide a valid video URL.');
             return;
         }
 
@@ -64,9 +78,10 @@ export default function VideoUpload({ onHashed, onAnalyzed, isConnected }: Video
             const hash = await calculateUrlHash(url);
             onHashed(hash);
             const result = await analyzeVideoUrl(url);
-            onAnalyzed(result);
+            setProgress(100);
+            setTimeout(() => onAnalyzed(result), 400);
         } catch (err) {
-            setError('URL Analysis failed');
+            setError('URL Analysis failed.');
             console.error(err);
         } finally {
             setIsProcessing(false);
@@ -74,122 +89,164 @@ export default function VideoUpload({ onHashed, onAnalyzed, isConnected }: Video
     };
 
     return (
-        <div className="retro-panel" style={{ position: 'relative' }}>
+        <div className="glass-card" style={{
+            padding: '32px',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
             {!isConnected && (
                 <div style={{
                     position: 'absolute',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    backgroundColor: 'rgba(11, 15, 20, 0.85)',
                     zIndex: 10,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     textAlign: 'center',
-                    padding: '20px',
-                    borderRadius: '4px',
-                    backdropFilter: 'blur(3px)'
+                    padding: '30px',
+                    backdropFilter: 'blur(8px)'
                 }}>
-                    <span style={{ fontSize: '40px', marginBottom: '10px' }}>🔒</span>
-                    <p style={{ color: 'var(--accent-orange)', fontWeight: '800', fontSize: '18px', textShadow: '0 0 10px rgba(255,107,0,0.5)' }}>
-                        WALLET CONNECTION REQUIRED
-                    </p>
-                    <p style={{ color: 'white', fontSize: '14px', marginTop: '5px' }}>
-                        Access denied. Connect to Stellar to scan.
+                    <div style={{
+                        width: '60px', height: '60px', borderRadius: '50%',
+                        background: 'rgba(255, 106, 0, 0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        marginBottom: '16px', border: '1px solid rgba(255,106,0,0.3)'
+                    }}>
+                        <span style={{ fontSize: '24px' }}>🔒</span>
+                    </div>
+                    <h3 style={{ color: 'white', fontWeight: '800', fontSize: '20px', marginBottom: '8px' }}>
+                        Connect Wallet to Initialize
+                    </h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '300px' }}>
+                        To prevent API abuse and ensure data integrity, a wallet connection is required for analysis.
                     </p>
                 </div>
             )}
 
-            <h3 className="text-neon-orange" style={{
-                fontSize: '24px',
-                fontWeight: '900',
-                marginBottom: '20px',
-                letterSpacing: '1px'
-            }}>
-                &gt; INITIALIZE SCANNER_
-            </h3>
-
-            <div style={{
-                display: 'flex',
-                background: '#000',
-                padding: '4px',
-                border: '1px solid #333',
-                marginBottom: '20px',
-            }}>
-                <button
-                    onClick={() => setMode('file')}
-                    style={{
-                        flex: 1, padding: '12px', background: mode === 'file' ? 'var(--accent-cyan)' : 'transparent',
-                        color: mode === 'file' ? 'black' : 'var(--accent-cyan)',
-                        border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.1s'
-                    }}
-                >
-                    FILE_MODE
-                </button>
-                <button
-                    onClick={() => setMode('url')}
-                    style={{
-                        flex: 1, padding: '12px', background: mode === 'url' ? 'var(--accent-cyan)' : 'transparent',
-                        color: mode === 'url' ? 'black' : 'var(--accent-cyan)',
-                        border: 'none', fontWeight: '800', cursor: 'pointer', transition: 'all 0.1s'
-                    }}
-                >
-                    URL_LINK_MODE
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '1px', color: 'white' }}>
+                    01. SOURCE_SELECTION
+                </h3>
+                <div style={{
+                    display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '10px'
+                }}>
+                    <button
+                        onClick={() => setMode('file')}
+                        style={{
+                            padding: '8px 16px', borderRadius: '8px', border: 'none',
+                            background: mode === 'file' ? 'var(--brand-orange)' : 'transparent',
+                            color: mode === 'file' ? 'black' : 'var(--text-secondary)',
+                            fontWeight: '700', fontSize: '12px', cursor: 'pointer', transition: '0.2s'
+                        }}
+                    >LOCAL_FILE</button>
+                    <button
+                        onClick={() => setMode('url')}
+                        style={{
+                            padding: '8px 16px', borderRadius: '8px', border: 'none',
+                            background: mode === 'url' ? 'var(--brand-orange)' : 'transparent',
+                            color: mode === 'url' ? 'black' : 'var(--text-secondary)',
+                            fontWeight: '700', fontSize: '12px', cursor: 'pointer', transition: '0.2s'
+                        }}
+                    >REMOTE_URL</button>
+                </div>
             </div>
 
-            {mode === 'file' && (
-                <div style={{
-                    border: '2px dashed var(--accent-cyan)',
-                    padding: '30px',
-                    textAlign: 'center',
-                    boxShadow: 'inset 0 0 10px rgba(0,245,255,0.1)'
-                }}>
+            {mode === 'file' ? (
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => { e.preventDefault(); setIsDragging(false); e.dataTransfer.files && handleFile(e.dataTransfer.files[0]); }}
+                    style={{
+                        border: `2px dashed ${isDragging ? 'var(--brand-orange)' : 'rgba(255,255,255,0.1)'}`,
+                        borderRadius: '16px',
+                        padding: '48px 30px',
+                        textAlign: 'center',
+                        background: isDragging ? 'rgba(255,106,0,0.05)' : 'rgba(255,255,255,0.01)',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}
+                >
+                    {isProcessing && (
+                        <div style={{
+                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                            background: 'rgba(11, 15, 20, 0.9)', zIndex: 5,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div className="scan-layer" />
+                            <div style={{ width: '200px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '16px' }}>
+                                <div style={{ height: '100%', width: `${progress}%`, background: 'var(--brand-orange)', transition: 'width 0.3s ease' }} />
+                            </div>
+                            <p style={{ color: 'white', fontWeight: '900', fontSize: '14px', letterSpacing: '2px' }}>
+                                SCANNING_FRAMES: {Math.round(progress)}%
+                            </p>
+                        </div>
+                    )}
+
                     <input
-                        type="file"
-                        accept="video/*"
+                        type="file" accept="video/*" id="video-upload"
                         onChange={(e) => e.target.files && handleFile(e.target.files[0])}
-                        disabled={isProcessing || !isConnected}
                         style={{ display: 'none' }}
-                        id="video-input"
+                        disabled={isProcessing}
                     />
-                    <label htmlFor="video-input" style={{ cursor: isProcessing ? 'not-allowed' : 'pointer' }}>
-                        <p className="text-neon" style={{ fontWeight: '800', fontSize: '18px' }}>UPLOAD ENCRYPTED_STREAM</p>
-                        <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>*.MP4, *.MOV_MAX(50MB)</p>
+                    <label htmlFor="video-upload" style={{ cursor: isProcessing ? 'wait' : 'pointer' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '16px' }}>📁</div>
+                        <p style={{ fontWeight: '800', color: 'white', fontSize: '16px' }}>
+                            {isProcessing ? 'ANALYTICS_IN_PROGRESS...' : 'DRAG & DROP VIDEO SOURCE'}
+                        </p>
+                        <p style={{ color: 'var(--text-tertiary)', fontSize: '13px', marginTop: '8px' }}>
+                            MP4, MOV or AVI up to 50MB
+                        </p>
                     </label>
                 </div>
-            )}
-
-            {mode === 'url' && (
-                <div>
-                    <input
-                        type="text"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        placeholder="INPUT_SOURCE_URL://"
-                        disabled={isProcessing || !isConnected}
-                        style={{
-                            width: '100%', padding: '15px', background: '#000', border: '1px solid var(--accent-cyan)',
-                            color: 'var(--accent-cyan)', fontSize: '16px', outline: 'none', fontFamily: 'var(--font-mono)'
-                        }}
-                    />
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type="text"
+                            placeholder="https://video-source-endpoint.com/v/..."
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            disabled={isProcessing}
+                            style={{
+                                width: '100%', padding: '16px 20px', borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'white', fontSize: '15px', outline: 'none', transition: '0.2s'
+                            }}
+                        />
+                        {isProcessing && (
+                            <div style={{
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                background: 'rgba(11, 15, 20, 0.9)', zIndex: 5, borderRadius: '12px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <p style={{ color: 'white', fontWeight: '900', fontSize: '12px', letterSpacing: '2px' }}>
+                                    URL_MAPPING: {Math.round(progress)}%
+                                </p>
+                            </div>
+                        )}
+                    </div>
                     <button
+                        className="btn-premium"
                         onClick={handleUrl}
-                        disabled={isProcessing || !url.trim() || !isConnected}
-                        className="btn-retro"
-                        style={{ marginTop: '15px', width: '100%' }}
+                        disabled={isProcessing || !url.trim()}
+                        style={{ width: '100%', justifyContent: 'center' }}
                     >
-                        {isProcessing ? 'SCANNING_SOURCE...' : 'EXECUTE_QUERY'}
+                        {isProcessing ? 'SCANNING_ENDPOINT...' : 'INITIALIZE_URL_QUERY'}
                     </button>
                 </div>
             )}
 
             {error && (
                 <div style={{
-                    marginTop: '20px', padding: '10px', background: 'rgba(255,0,0,0.1)',
-                    border: '1px solid var(--error)', color: 'var(--error)', fontWeight: 'bold', fontSize: '13px'
+                    marginTop: '20px', padding: '14px', borderRadius: '10px',
+                    background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)',
+                    color: 'var(--error)', fontSize: '13px', fontWeight: '700', display: 'flex', gap: '10px'
                 }}>
-                    [SYSTEM_ERR]: {error.toUpperCase()}
+                    <span>⚠️</span> {error}
                 </div>
             )}
         </div>

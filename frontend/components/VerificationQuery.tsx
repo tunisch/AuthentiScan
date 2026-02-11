@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { getVerification, getVerificationCount, VerificationRecord } from '@/lib/soroban';
+import { useState, useEffect } from 'react';
+import { getVerification, VerificationRecord } from '@/lib/soroban';
 
 interface VerificationQueryProps {
     videoHash: string | null;
@@ -11,113 +11,125 @@ interface VerificationQueryProps {
 
 export default function VerificationQuery({ videoHash, walletAddress, refreshTrigger }: VerificationQueryProps) {
     const [record, setRecord] = useState<VerificationRecord | null>(null);
-    const [totalCount, setTotalCount] = useState<number | null>(null);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not_found' | 'error'>('idle');
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-    const handleQuery = useCallback(async () => {
-        if (!videoHash || !walletAddress) return;
-
-        setStatus('loading');
-        setErrorMsg(null);
-        setRecord(null);
-
-        try {
-            const [verificationResult, countResult] = await Promise.all([
-                getVerification(videoHash, walletAddress),
-                getVerificationCount(walletAddress),
-            ]);
-
-            setTotalCount(countResult);
-
-            if (verificationResult) {
-                setRecord(verificationResult);
-                setStatus('found');
-            } else {
-                setStatus('not_found');
-            }
-        } catch (err: any) {
-            setErrorMsg(err.message || 'Ledger query failed');
-            setStatus('error');
-        }
-    }, [videoHash, walletAddress]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasChecked, setHasChecked] = useState(false);
 
     useEffect(() => {
-        if (refreshTrigger > 0 && videoHash && walletAddress) {
+        if (videoHash && walletAddress) {
             handleQuery();
+        } else {
+            setRecord(null);
+            setHasChecked(false);
         }
-    }, [refreshTrigger, handleQuery]);
+    }, [videoHash, walletAddress, refreshTrigger]);
+
+    const handleQuery = async () => {
+        if (!videoHash || !walletAddress) return;
+        setIsLoading(true);
+        try {
+            const result = await getVerification(videoHash, walletAddress);
+            setRecord(result);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+            setHasChecked(true);
+        }
+    };
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        alert('Copied to clipboard');
+    };
 
     return (
-        <div className="retro-panel">
-            <h3 className="text-neon" style={{ fontSize: '20px', fontWeight: '900', marginBottom: '20px' }}>
-                // LEDGER_AUDIT_LOG
-            </h3>
+        <div className="glass-card" style={{ padding: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '1px', color: 'white' }}>
+                    04. LEDGER_AUDIT_LOG
+                </h3>
+                <button
+                    onClick={handleQuery}
+                    disabled={isLoading || !videoHash}
+                    style={{
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'white', padding: '8px 16px', borderRadius: '8px',
+                        fontSize: '11px', fontWeight: '800', cursor: 'pointer', transition: '0.2s'
+                    }}
+                >
+                    {isLoading ? 'SYNCING...' : 'REFRESH_LOG'}
+                </button>
+            </div>
 
-            <button
-                onClick={handleQuery}
-                disabled={!videoHash || !walletAddress || status === 'loading'}
-                className="btn-retro"
-                style={{ width: '100%', marginBottom: '20px' }}
-            >
-                {status === 'loading' ? 'SYNCING_WITH_STELLAR...' : 'FETCH_BLOCKCHAIN_PROOF'}
-            </button>
-
-            {status === 'found' && record && (
-                <div style={{ border: '1px solid #333' }}>
-                    <div style={{ background: '#000', padding: '10px 15px', borderBottom: '1px solid #333' }}>
-                        <p style={{ fontWeight: '900', fontSize: '12px', color: 'var(--accent-magenta)', letterSpacing: '1px' }}>
-                            &gt; IMMUTABLE_DATA_CHUNKS
-                        </p>
-                    </div>
-
-                    <div style={{ background: '#0a0a0a' }}>
-                        <Row label="CONTENT_ID" value={record.video_hash} truncate />
-                        <Row label="VALIDATOR_PUB" value={record.submitter} truncate />
-                        <Row
-                            label="VERDICT_STATUS"
-                            value={record.is_ai_generated ? 'AI_DETECTED' : 'AUTHENTIC_VERIFIED'}
-                            highlight={record.is_ai_generated ? 'red' : 'green'}
-                        />
-                        <Row label="ACCURACY_RATE" value={`${record.confidence_score}%`} />
-                    </div>
-
-                    {totalCount !== null && (
-                        <div style={{ background: '#000', padding: '10px 15px', fontSize: '11px', color: '#666' }}>
-                            LEDGER_ENTRIES_FOR_VALIDATOR: {totalCount}
+            {!videoHash ? (
+                <div style={{
+                    padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)',
+                    borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)'
+                }}>
+                    <p style={{ color: 'var(--text-tertiary)', fontSize: '13px', fontWeight: '600' }}>
+                        WATING_FOR_HASH_INPUT_BUFFER...
+                    </p>
+                </div>
+            ) : hasChecked && record ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{
+                        padding: '24px', background: 'rgba(16, 185, 129, 0.03)',
+                        border: '1px solid rgba(16, 185, 129, 0.1)', borderRadius: '16px'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 10px var(--success)' }} />
+                                <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>VALID_ON_CHAIN_RECORD</span>
+                            </div>
+                            <button
+                                onClick={() => copyToClipboard(record.video_hash)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--text-tertiary)' }}
+                            >📋 COPY_HASH</button>
                         </div>
-                    )}
-                </div>
-            )}
 
-            {status === 'not_found' && (
-                <div style={{ padding: '20px', textAlign: 'center', background: '#000', border: '1px dashed #333' }}>
-                    <p style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>[!] NO_LEDGER_DATA_FOUND_FOR_TARGET_HASH</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <DataRow label="VERDICT" value={record.is_ai_generated ? 'DEEPFAKE' : 'AUTHENTIC'} color={record.is_ai_generated ? 'var(--error)' : 'var(--success)'} />
+                            <DataRow label="CONFIDENCE" value={`${record.confidence_score}%`} />
+                            <div style={{ gridColumn: 'span 2' }}>
+                                <DataRow label="ANCHOR_HASH" value={record.video_hash} isMono />
+                            </div>
+                            <DataRow label="TIMESTAMP" value={new Date(record.timestamp * 1000).toLocaleString()} />
+                            <DataRow label="STATUS" value="IMMUTABLE" color="var(--accent-cyan)" />
+                        </div>
+                    </div>
                 </div>
-            )}
-
-            {status === 'error' && (
-                <p style={{ fontSize: '14px', color: 'var(--error)', textAlign: 'center', marginTop: '10px' }}>[ERR]: {errorMsg?.toUpperCase()}</p>
+            ) : hasChecked ? (
+                <div style={{
+                    padding: '30px', background: 'rgba(244, 63, 94, 0.03)',
+                    border: '1px solid rgba(244, 63, 94, 0.1)', borderRadius: '16px', textAlign: 'center'
+                }}>
+                    <p style={{ color: 'var(--error)', fontWeight: '800', fontSize: '14px', marginBottom: '8px' }}>[!] NO_LEDGER_RECORD_FOUND</p>
+                    <p style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                        This video hash has not been anchored to the Stellar Network by this wallet.
+                    </p>
+                </div>
+            ) : (
+                <button
+                    className="btn-premium"
+                    onClick={handleQuery}
+                    style={{ width: '100%', justifyContent: 'center' }}
+                >
+                    FETCH_BLOCKCHAIN_PROOF
+                </button>
             )}
         </div>
     );
 }
 
-function Row({ label, value, truncate, highlight }: { label: string; value: string; truncate?: boolean; highlight?: 'red' | 'green' }) {
-    const displayValue = truncate && value.length > 20 ? `${value.slice(0, 10)}...${value.slice(-10)}` : value;
-
-    let color = 'white';
-    if (highlight === 'red') color = 'var(--error)';
-    if (highlight === 'green') color = 'var(--success)';
-
+function DataRow({ label, value, color = 'white', isMono = false }: { label: string; value: string; color?: string; isMono?: boolean }) {
     return (
-        <div style={{
-            display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid #1a1a1a'
-        }}>
-            <span style={{ fontSize: '12px', color: 'var(--accent-cyan)', fontWeight: '800' }}>{label}</span>
-            <span style={{ fontSize: '13px', fontWeight: '900', color: color, fontFamily: 'var(--font-mono)' }}>
-                {displayValue.toUpperCase()}
-            </span>
+        <div>
+            <p style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-tertiary)', letterSpacing: '1px', marginBottom: '4px' }}>{label}</p>
+            <p style={{
+                fontSize: isMono ? '12px' : '14px', fontWeight: '700', color: color,
+                fontFamily: isMono ? 'var(--font-mono)' : 'inherit',
+                wordBreak: isMono ? 'break-all' : 'normal'
+            }}>{value}</p>
         </div>
     );
 }
