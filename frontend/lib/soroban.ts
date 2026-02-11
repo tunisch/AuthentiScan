@@ -14,6 +14,7 @@ import {
 
 // Decoded verification record type
 export interface VerificationRecord {
+    record_id: number;
     video_hash: string;
     submitter: string;
     is_ai_generated: boolean;
@@ -51,6 +52,7 @@ function decodeVerificationRecord(scVal: xdr.ScVal): VerificationRecord | null {
         // Handle both cases
         if (native && typeof native === 'object') {
             return {
+                record_id: Number(native.record_id || 0),
                 video_hash: native.video_hash
                     ? Buffer.from(native.video_hash).toString('hex')
                     : '',
@@ -83,7 +85,7 @@ export async function submitVerification(
     isAiGenerated: boolean,
     confidenceScore: number,
     signTransaction: (txXdr: string, opts: { networkPassphrase: string }) => Promise<string>,
-): Promise<{ txHash: string }> {
+): Promise<{ txHash: string; recordId?: number }> {
 
     if (!CONTRACT_ID) {
         throw new Error('CONTRACT_ID is not set. Add NEXT_PUBLIC_CONTRACT_ID to .env.local');
@@ -158,7 +160,19 @@ export async function submitVerification(
 
     if (getResponse.status === 'SUCCESS') {
         console.log('✅ Transaction confirmed:', txHash);
-        return { txHash };
+
+        // Extract return value (record_id) if available
+        let recordId: number | undefined;
+        try {
+            const txResult = getResponse as any;
+            if (txResult.returnValue) {
+                recordId = scValToNative(txResult.returnValue);
+            }
+        } catch (e) {
+            console.warn('Could not extract recordId from tx result:', e);
+        }
+
+        return { txHash, recordId };
     } else {
         console.error('Transaction failed:', getResponse);
         throw new Error(`Transaction failed with status: ${getResponse.status}`);

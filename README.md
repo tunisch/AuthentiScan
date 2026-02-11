@@ -88,6 +88,39 @@ AuthentiScan prioritizes user privacy and data integrity.
 
 ---
 
+## 🛡️ Threat Model & Disclosures
+
+To preserve the integrity of the audit trail, AuthentiScan operates under a strictly defined security model:
+
+| Risk Factor | Mitigating Evidence |
+| :--- | :--- |
+| **Hash Collisions** | Risk is mathematically negligible using industrial-grade SHA-256 (2^256 space). |
+| **Probabilistic AI** | AI diagnostics are probabilistic; results indicate "Forensic Probability" rather than absolute legal truth. |
+| **Frontend Tampering** | While the UI can be spoofed, the **on-chain anchor** is signed by a verified auditor and remains immutable. |
+| **Data Privacy** | **No video data is stored on-chain.** The ledger only contains anonymous hashes and diagnostic metadata. |
+
+> [!NOTE]
+> **Production Roadmap:** Future iterations will implement multi-signature auditor consensus, rate limiting, and advanced anti-spam mechanisms to ensure ecosystem stability.
+
+---
+
+## 🗺️ System Interaction Flow
+
+The following lifecycle diagram illustrates how AuthentiScan bridges the gap between local forensic analysis and decentralized consensus.
+
+```mermaid
+graph LR
+    C[Client UI] <--> W[Freighter Wallet]
+    W <--> R[Soroban RPC]
+    R <--> SC[Smart Contract]
+    SC <--> L[Stellar Ledger]
+    
+    style SC fill:#ff6a00,stroke:#fff,stroke-width:2px
+    style L fill:#10b981,stroke:#fff,stroke-width:2px
+```
+
+---
+
 ## 🚀 Developer Quick-Start
 
 ### 1. Prerequisites
@@ -106,6 +139,14 @@ stellar contract build
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
+## 🔬 Forensic Engine (AI Layer)
+
+The current AI diagnostic layer is implemented as a **Forensic Telemetry Engine (Demo Edition)**.
+- **Probabilistic Scoring:** Decisions are made based on spectral and spatial probability distributions.
+- **Verification Metadata:** The confidence score represents the model's certainty at the time of ingestion.
+- **Production Note:** A production-ready environment would integrate multi-modal deepfake detectors (Vision Transformers, Audio-Spectral Analysis) via decentralized oracles.
+
+---
 
 # 3. Deploy
 stellar keys generate deployer --network testnet --fund

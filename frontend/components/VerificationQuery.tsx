@@ -88,6 +88,7 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <DataRow label="ANCHOR_ID" value={`#${record.record_id}`} color="var(--brand-orange)" />
                             <DataRow label="VERDICT" value={record.is_ai_generated ? 'DEEPFAKE' : 'AUTHENTIC'} color={record.is_ai_generated ? 'var(--error)' : 'var(--success)'} />
                             <DataRow label="CONFIDENCE" value={`${record.confidence_score}%`} />
                             <div style={{ gridColumn: 'span 2' }}>

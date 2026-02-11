@@ -1,0 +1,101 @@
+    Checking video-verification v0.1.0 (C:\Users\tunah\Desktop\block_chain_project\contract)
+error[E0599]: no method named `unwrap` found for type `u32` in the current scope
+   --> src\lib.rs:227:11
+    |
+222 | /         client.submit_verification(
+223 | |             &submitter,
+224 | |             &video_hash,
+225 | |             &is_ai_generated,
+226 | |             &confidence_score,
+227 | |         ).unwrap();
+    | |          -^^^^^^ method not found in `u32`
+    | |__________|
+    |
+
+error[E0277]: can't compare `u32` with `core::result::Result<{integer}, _>`
+   --> src\lib.rs:251:9
+    |
+251 |         assert_eq!(id1, Ok(1));
+    |         ^^^^^^^^^^^^^^^^^^^^^^ no implementation for `u32 == core::result::Result<{integer}, _>`
+    |
+    = help: the trait `PartialEq<core::result::Result<{integer}, _>>` is not implemented for `u32`
+help: the following other types implement trait `PartialEq<Rhs>`
+   --> /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1885:5
+   ::: /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1887:5
+    |
+    = note: `u32` implements `PartialEq`
+    |
+   ::: C:\Users\tunah\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_json-1.0.149\src\value\partial_eq.rs:97:1
+    |
+ 97 | / partialeq_numeric! {
+ 98 | |     eq_i64[i8 i16 i32 i64 isize]
+ 99 | |     eq_u64[u8 u16 u32 u64 usize]
+100 | |     eq_f32[f32]
+101 | |     eq_f64[f64]
+102 | |     eq_bool[bool]
+103 | | }
+    | |_^ `u32` implements `PartialEq<serde_json::value::Value>`
+    = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: can't compare `u32` with `core::result::Result<{integer}, _>`
+   --> src\lib.rs:256:9
+    |
+256 |         assert_eq!(id2, Ok(1));
+    |         ^^^^^^^^^^^^^^^^^^^^^^ no implementation for `u32 == core::result::Result<{integer}, _>`
+    |
+    = help: the trait `PartialEq<core::result::Result<{integer}, _>>` is not implemented for `u32`
+help: the following other types implement trait `PartialEq<Rhs>`
+   --> /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1885:5
+   ::: /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1887:5
+    |
+    = note: `u32` implements `PartialEq`
+    |
+   ::: C:\Users\tunah\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_json-1.0.149\src\value\partial_eq.rs:97:1
+    |
+ 97 | / partialeq_numeric! {
+ 98 | |     eq_i64[i8 i16 i32 i64 isize]
+ 99 | |     eq_u64[u8 u16 u32 u64 usize]
+100 | |     eq_f32[f32]
+101 | |     eq_f64[f64]
+102 | |     eq_bool[bool]
+103 | | }
+    | |_^ `u32` implements `PartialEq<serde_json::value::Value>`
+    = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: can't compare `u32` with `core::result::Result<_, core::result::Result<Error, _>>`
+   --> src\lib.rs:274:9
+    |
+274 |         assert_eq!(result, Err(Ok(Error::InvalidConfidence)));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `u32 == core::result::Result<_, core::result::Result<Error, _>>`
+    |
+    = help: the trait `PartialEq<core::result::Result<_, core::result::Result<Error, _>>>` is not implemented for `u32`
+help: the following other types implement trait `PartialEq<Rhs>`
+   --> /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1885:5
+   ::: /rustc/254b59607d4417e9dffbc307138ae5c86280fe4c\library\core\src\cmp.rs:1887:5
+    |
+    = note: `u32` implements `PartialEq`
+    |
+   ::: C:\Users\tunah\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde_json-1.0.149\src\value\partial_eq.rs:97:1
+    |
+ 97 | / partialeq_numeric! {
+ 98 | |     eq_i64[i8 i16 i32 i64 isize]
+ 99 | |     eq_u64[u8 u16 u32 u64 usize]
+100 | |     eq_f32[f32]
+101 | |     eq_f64[f64]
+102 | |     eq_bool[bool]
+103 | | }
+    | |_^ `u32` implements `PartialEq<serde_json::value::Value>`
+    = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `submitter`
+   --> src\lib.rs:196:9
+    |
+196 |         submitter: Address,
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_submitter`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0277, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `video-verification` (lib test) generated 1 warning
+error: could not compile `video-verification` (lib test) due to 4 previous errors; 1 warning emitted

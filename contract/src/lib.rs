@@ -38,6 +38,7 @@ pub enum DataKey {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VerificationRecord {
+    pub record_id: u32,               // Benzersiz Kayıt No / Unique Record ID
     pub video_hash: BytesN<32>,      // Video SHA-256 hash'i / Video SHA-256 hash
     pub submitter: Address,           // Gönderen cüzdan adresi / Submitter wallet address
     pub is_ai_generated: bool,        // AI üretimi mi? / Is AI-generated?
@@ -97,62 +98,47 @@ impl VideoVerificationContract {
         video_hash: BytesN<32>,
         is_ai_generated: bool,
         confidence_score: u32,
-    ) -> Result<(), Error> {
-        // KİMLİK DOĞRULAMA: İşlemin gönderen cüzdanı tarafından imzalandığını doğrula
-        // Bu, kimliğe bürünmeyi önler ve sadece cüzdan sahibinin gönderim yapabilmesini sağlar
-        // AUTHENTICATION: Verify transaction is signed by the submitter's wallet
-        // This prevents impersonation and ensures only the wallet owner can submit
+    ) -> Result<u32, Error> {
+        // KİMLİK DOĞRULAMA
         submitter.require_auth();
 
-        // DOĞRULAMA: Güven skoru geçerli aralıkta olmalı (0-100)
-        // VALIDATION: Confidence score must be in valid range (0-100)
+        // VALIDATION
         if confidence_score > 100 {
             return Err(Error::InvalidConfidence);
         }
 
-        // TEKRAR KONTROLÜ: Global Önem: Bir video sadece BİR kez doğrulanabilir.
-        // GLOBAL CHECK: One video, one truth. Re-submission is strictly prohibited.
         let key = DataKey::Verification(video_hash.clone());
-        if env.storage().persistent().has(&key) {
-            return Err(Error::AlreadyVerified);
+        
+        // TEKRAR KONTROLÜ: Eğer zaten varsa, mevcut ID'yi dön (İdempotent Davranış)
+        // GLOBAL CHECK: One video, one truth. Re-submission returns existing ID.
+        if let Some(existing) = env.storage().persistent().get::<_, VerificationRecord>(&key) {
+            return Ok(existing.record_id);
         }
 
-        // Değişmez kayıt için mevcut ledger zaman damgasını al
-        // Get current ledger timestamp for immutable record
-        let timestamp = env.ledger().timestamp();
+        // Global doğrulama sayacını al ve yenisini hesapla
+        let count_key = DataKey::VerificationCount;
+        let current_count: u32 = env.storage().persistent().get(&count_key).unwrap_or(0);
+        let new_id = current_count + 1;
 
         // Doğrulama kaydını oluştur
-        // Create verification record
         let record = VerificationRecord {
+            record_id: new_id,
             video_hash: video_hash.clone(),
             submitter: submitter.clone(),
             is_ai_generated,
             confidence_score,
-            timestamp,
+            timestamp: env.ledger().timestamp(),
         };
 
-        // DEPOLAMA: Kalıcı depolamaya yaz (kontrat yükseltmelerinde hayatta kalır)
-        // TTL (Yaşam Süresi) 1 yıl olarak ayarlandı (~5 saniye/ledger)
-        // 1 yıl ≈ 6,307,200 ledger
-        // STORAGE: Write to persistent storage (survives contract upgrades)
-        // TTL (Time To Live) set to 1 year (in ledgers, ~5 seconds per ledger)
-        // 1 year ≈ 6,307,200 ledgers
+        // DEPOLAMA
         env.storage().persistent().set(&key, &record);
         env.storage().persistent().extend_ttl(&key, 6_307_200, 6_307_200);
 
-        // Global doğrulama sayacını artır
-        // Increment global verification count
-        let count_key = DataKey::VerificationCount;
-        let current_count: u32 = env
-            .storage()
-            .persistent()
-            .get(&count_key)
-            .unwrap_or(0);
-        
-        env.storage().persistent().set(&count_key, &(current_count + 1));
+        // Sayacı güncelle
+        env.storage().persistent().set(&count_key, &new_id);
         env.storage().persistent().extend_ttl(&count_key, 6_307_200, 6_307_200);
 
-        Ok(())
+        Ok(new_id)
     }
 
     /// Retrieve a specific verification record by video hash and submitter
@@ -207,7 +193,7 @@ impl VideoVerificationContract {
     /// maintaining a separate index of submitter -> [video_hashes] for efficiency.
     pub fn get_verifications_by_submitter(
         env: Env,
-        submitter: Address,
+        _submitter: Address,
         _start: u32,
         _limit: u32,
     ) -> Vec<VerificationRecord> {
@@ -233,23 +219,26 @@ mod test {
 
         env.mock_all_auths();
 
-        client.submit_verification(
+        // submit_verification returns the record ID (u32)
+        let id = client.submit_verification(
             &submitter,
             &video_hash,
             &is_ai_generated,
             &confidence_score,
-        ).unwrap();
+        );
+        assert_eq!(id, 1);
 
         let record = client.get_verification(&video_hash).unwrap();
         assert_eq!(record.submitter, submitter);
         assert_eq!(record.is_ai_generated, is_ai_generated);
         assert_eq!(record.confidence_score, confidence_score);
+        assert_eq!(record.record_id, 1);
 
         assert_eq!(client.get_verification_count(), 1);
     }
 
     #[test]
-    fn test_global_duplicate_rejection() {
+    fn test_global_duplicate_idempotency() {
         let env = Env::default();
         let contract_id = env.register_contract(None, VideoVerificationContract);
         let client = VideoVerificationContractClient::new(&env, &contract_id);
@@ -260,12 +249,15 @@ mod test {
 
         env.mock_all_auths();
 
-        // First submission by User A succeeds
-        client.submit_verification(&submitter1, &video_hash, &false, &90).unwrap();
+        // First submission succeeds and returns ID 1
+        let id1 = client.submit_verification(&submitter1, &video_hash, &false, &90);
+        assert_eq!(id1, 1);
 
-        // Second submission by User B with SAME hash fails (Global Truth protection)
-        let result = client.submit_verification(&submitter2, &video_hash, &true, &95);
-        assert_eq!(result, Err(Ok(Error::AlreadyVerified)));
+        // Second submission is IDEMPOTENT - Returns same ID 1
+        let id2 = client.submit_verification(&submitter2, &video_hash, &true, &95);
+        assert_eq!(id2, 1);
+        
+        assert_eq!(client.get_verification_count(), 1);
     }
 
     #[test]
@@ -279,7 +271,8 @@ mod test {
 
         env.mock_all_auths();
 
-        let result = client.submit_verification(&submitter, &video_hash, &true, &150);
+        // Use try_ variant to check for errors
+        let result = client.try_submit_verification(&submitter, &video_hash, &true, &150);
         assert_eq!(result, Err(Ok(Error::InvalidConfidence)));
     }
 }

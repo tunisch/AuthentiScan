@@ -25,6 +25,7 @@ export default function SubmitVerification({
 }: SubmitVerificationProps) {
     const [txState, setTxState] = useState<TxState>('idle');
     const [txHash, setTxHash] = useState<string | null>(null);
+    const [recordId, setRecordId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async () => {
@@ -55,6 +56,7 @@ export default function SubmitVerification({
             // Small delay to simulate ledger confirmation
             setTimeout(() => {
                 setTxHash(result.txHash);
+                if (result.recordId) setRecordId(result.recordId);
                 setTxState('success');
                 onSubmitted();
             }, 1500);
@@ -87,6 +89,16 @@ export default function SubmitVerification({
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {recordId && (
+                        <div style={{
+                            padding: '16px', background: 'rgba(255,106,0,0.05)', borderRadius: '12px',
+                            border: '1px solid rgba(255,106,0,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}>
+                            <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--text-tertiary)' }}>ANCHOR_ID</span>
+                            <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--brand-orange)', fontFamily: 'var(--font-mono)' }}>#{recordId}</span>
+                        </div>
+                    )}
+
                     <div style={{
                         padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px',
                         fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)',
@@ -102,9 +114,10 @@ export default function SubmitVerification({
                     <a
                         href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
                         target="_blank"
+                        rel="noopener noreferrer"
                         style={{
                             fontSize: '12px', color: 'var(--brand-orange)', fontWeight: '800',
-                            textDecoration: 'none', letterSpacing: '1px'
+                            textDecoration: 'none', letterSpacing: '1px', marginTop: '10px'
                         }}
                     >
                         VIEW_ON_STELLAR_EXPLORER ↗
