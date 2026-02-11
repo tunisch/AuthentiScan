@@ -76,6 +76,69 @@ export async function analyzeVideo(file: File): Promise<AIAnalysisResult> {
 }
 
 /**
+ * Video URL'sini analiz et (mock)
+ * Analyze video URL (mock)
+ * 
+ * URL'nin kendisini analiz eder, video indirmez.
+ * Analyzes the URL itself, does not download the video.
+ * 
+ * @param url - Video URL'si / Video URL
+ * @returns Promise<AIAnalysisResult> - Analiz sonucu / Analysis result
+ */
+export async function analyzeVideoUrl(url: string): Promise<AIAnalysisResult> {
+    // Gerçekçi bir analiz süresi simüle et (1-2 saniye)
+    // Simulate realistic analysis time (1-2 seconds)
+    const analysisTime = 1000 + Math.random() * 1000;
+
+    await new Promise(resolve => setTimeout(resolve, analysisTime));
+
+    // URL bazlı heuristikler
+    // URL-based heuristics
+    const lowerUrl = url.toLowerCase();
+
+    // Platform bazlı skor
+    // Platform-based score
+    let platformScore = 30;
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
+        platformScore = 40; // YouTube videoları genelde gerçek
+    } else if (lowerUrl.includes('tiktok.com')) {
+        platformScore = 60; // TikTok'ta AI içerik yaygın
+    } else if (lowerUrl.includes('ai') || lowerUrl.includes('generated')) {
+        platformScore = 80; // URL'de "ai" geçiyorsa şüpheli
+    }
+
+    // URL uzunluğu bazlı skor (çok kısa URL'ler şüpheli)
+    // URL length based score (very short URLs suspicious)
+    const lengthScore = url.length < 30 ? 60 : 35;
+
+    // Rastgele faktör
+    // Random factor
+    const randomScore = Math.random() * 30;
+
+    // Toplam skor
+    // Total score
+    const totalScore = (platformScore * 0.5 + lengthScore * 0.3 + randomScore * 0.2);
+
+    // Eşik değeri: 50'nin üzeri AI-generated
+    // Threshold: above 50 is AI-generated
+    const isAI = totalScore > 50;
+
+    // Güven skorunu normalize et
+    // Normalize confidence score
+    const confidence = Math.min(100, Math.max(0, Math.round(totalScore)));
+
+    return {
+        is_ai_generated: isAI,
+        confidence_score: confidence,
+        analysis_time_ms: Math.round(analysisTime),
+        metadata: {
+            file_size: url.length, // URL uzunluğunu kullan
+            format: 'URL',
+        },
+    };
+}
+
+/**
  * Güven skorunu kategorize et
  * Categorize confidence score
  * 

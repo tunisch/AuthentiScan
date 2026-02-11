@@ -15,79 +15,210 @@ export default function Home() {
   const wallet = useWallet();
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold uppercase">Video Verification dApp</h1>
+    <main className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+      {/* Header */}
+      <header className="glass sticky top-0 z-50 animate-fade-in" style={{
+        padding: 'var(--spacing-md) var(--spacing-lg)',
+        borderBottom: '1px solid var(--glass-border)',
+      }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-violet) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+            }}>
+              🎬
+            </div>
+            <h1 style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+            }}>
+              Video Verification
+            </h1>
+          </div>
+          <WalletConnectInline wallet={wallet} />
+        </div>
+      </header>
 
-        <WalletConnectInline wallet={wallet} />
+      {/* Hero Section */}
+      <section className="animate-fade-in" style={{
+        padding: 'var(--spacing-xl) var(--spacing-lg)',
+        textAlign: 'center',
+      }}>
+        <h2 className="gradient-text" style={{
+          fontSize: '56px',
+          fontWeight: '700',
+          lineHeight: '1.1',
+          marginBottom: 'var(--spacing-md)',
+        }}>
+          Verify Video Authenticity
+          <br />
+          on Blockchain
+        </h2>
+        <p style={{
+          fontSize: '20px',
+          color: 'var(--text-secondary)',
+          maxWidth: '600px',
+          margin: '0 auto',
+        }}>
+          Upload any video or paste a URL. Our AI analyzes it, and the result is permanently stored on Stellar blockchain.
+        </p>
+      </section>
 
-        <VideoUpload
-          onHashed={(hash) => setVideoHash(hash)}
-          onAnalyzed={(result) => setAnalysis(result)}
-        />
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto" style={{
+        padding: '0 var(--spacing-lg) var(--spacing-xl)',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)' }}>
 
-        {analysis && (
-          <AnalysisResult analysis={analysis} videoHash={videoHash!} />
-        )}
+          {/* Upload Card */}
+          <div className="animate-slide-up">
+            <VideoUpload
+              onHashed={(hash) => setVideoHash(hash)}
+              onAnalyzed={(result) => setAnalysis(result)}
+            />
+          </div>
 
-        {analysis && videoHash && (
-          <SubmitVerification
-            analysis={analysis}
-            videoHash={videoHash}
-            walletAddress={wallet.address}
-            signTransaction={wallet.sign}
-            onSubmitted={() => setRefreshTrigger((n) => n + 1)}
-          />
-        )}
+          {/* Analysis Result */}
+          {analysis && (
+            <div className="animate-slide-up">
+              <AnalysisResult analysis={analysis} videoHash={videoHash!} />
+            </div>
+          )}
 
-        {/* Blockchain kanıt görünümü — gönderimden sonra otomatik yenilenir */}
-        <VerificationQuery
-          videoHash={videoHash}
-          walletAddress={wallet.address}
-          refreshTrigger={refreshTrigger}
-        />
+          {/* Submit Button */}
+          {analysis && videoHash && (
+            <div className="animate-slide-up">
+              <SubmitVerification
+                analysis={analysis}
+                videoHash={videoHash}
+                walletAddress={wallet.address}
+                signTransaction={wallet.sign}
+                onSubmitted={() => setRefreshTrigger((n) => n + 1)}
+              />
+            </div>
+          )}
+
+          {/* Blockchain Proof */}
+          <div className="animate-slide-up">
+            <VerificationQuery
+              videoHash={videoHash}
+              walletAddress={wallet.address}
+              refreshTrigger={refreshTrigger}
+            />
+          </div>
+        </div>
       </div>
     </main>
   );
 }
 
-// Inline WalletConnect that uses the shared wallet state
+// Inline WalletConnect with modern styling
 function WalletConnectInline({ wallet }: { wallet: ReturnType<typeof useWallet> }) {
   const { isConnected, address, network, isLoading, error, connect, disconnect } = wallet;
 
   if (!isConnected) {
     return (
-      <div className="border-2 border-black p-4 bg-white">
-        <div className="flex items-center justify-between">
-          <p className="font-mono">Wallet: Not Connected</p>
-          <button
-            onClick={connect}
-            disabled={isLoading}
-            className="border-2 border-black px-4 py-1 font-bold hover:bg-gray-100 disabled:opacity-50"
-          >
-            {isLoading ? 'Connecting...' : 'Connect'}
-          </button>
-        </div>
-        {error && <p className="text-red-600 text-sm mt-2 font-mono">{error}</p>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+        {error && (
+          <span style={{ fontSize: '14px', color: 'var(--error)' }}>
+            {error}
+          </span>
+        )}
+        <button
+          onClick={connect}
+          disabled={isLoading}
+          style={{
+            padding: '10px 20px',
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-violet) 100%)',
+            color: 'white',
+            border: 'none',
+            fontWeight: '600',
+            fontSize: '14px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            opacity: isLoading ? 0.6 : 1,
+            transition: 'all var(--transition-base)',
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          {isLoading ? 'Connecting...' : 'Connect Wallet'}
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="border-2 border-black p-4 bg-white">
-      <div className="flex items-center justify-between">
-        <div className="font-mono text-sm">
-          <p>Wallet: <span className="text-green-700">Connected</span></p>
-          <p className="text-xs mt-1">{address?.slice(0, 8)}...{address?.slice(-8)}</p>
-          {network && <p className="text-xs text-gray-500">Network: {network}</p>}
+    <div className="glass" style={{
+      padding: '12px 20px',
+      borderRadius: 'var(--radius-md)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--spacing-md)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          background: 'var(--success)',
+          boxShadow: '0 0 8px var(--success)',
+        }} />
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>
+            {address?.slice(0, 6)}...{address?.slice(-4)}
+          </span>
+          {network && (
+            <span style={{
+              marginLeft: '8px',
+              fontSize: '12px',
+              color: 'var(--text-tertiary)',
+            }}>
+              {network}
+            </span>
+          )}
         </div>
-        <button
-          onClick={disconnect}
-          className="border-2 border-black px-4 py-1 font-bold hover:bg-gray-100 text-sm"
-        >
-          Disconnect
-        </button>
       </div>
+      <button
+        onClick={disconnect}
+        style={{
+          padding: '6px 12px',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--bg-tertiary)',
+          color: 'var(--text-secondary)',
+          border: 'none',
+          fontSize: '12px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          transition: 'all var(--transition-fast)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--bg-secondary)';
+          e.currentTarget.style.color = 'var(--text-primary)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'var(--bg-tertiary)';
+          e.currentTarget.style.color = 'var(--text-secondary)';
+        }}
+      >
+        Disconnect
+      </button>
     </div>
   );
 }

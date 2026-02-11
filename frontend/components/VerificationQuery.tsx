@@ -63,48 +63,111 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
     }, [refreshTrigger, handleQuery]);
 
     return (
-        <div className="border-2 border-black p-4 bg-white space-y-4">
-            <div className="flex items-center justify-between">
-                <p className="font-bold uppercase">On-Chain Verification Record</p>
+        <div className="glass" style={{
+            padding: 'var(--spacing-lg)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--glass-border)',
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-md)' }}>
+                <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: 'var(--text-primary)',
+                }}>
+                    On-Chain Verification Record
+                </h3>
                 {queryTime && status === 'found' && (
-                    <span className="text-xs font-mono text-gray-400">query: {queryTime}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
+                        query: {queryTime}
+                    </span>
                 )}
             </div>
 
             <button
                 onClick={handleQuery}
                 disabled={!videoHash || !walletAddress || status === 'loading'}
-                className="border-2 border-black px-4 py-2 font-bold hover:bg-gray-100 transition-colors w-full disabled:opacity-50"
+                style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    cursor: !videoHash || !walletAddress || status === 'loading' ? 'not-allowed' : 'pointer',
+                    transition: 'all var(--transition-base)',
+                    marginBottom: 'var(--spacing-md)',
+                }}
+                onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                        e.currentTarget.style.background = 'var(--bg-tertiary)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--bg-secondary)';
+                    e.currentTarget.style.borderColor = 'var(--glass-border)';
+                }}
             >
-                {status === 'loading' ? 'Querying blockchain...' : 'Read Verification from Blockchain'}
+                {status === 'loading' ? '⏳ Querying blockchain...' : 'Read Verification from Blockchain'}
             </button>
 
             {!walletAddress && (
-                <p className="text-sm font-mono text-gray-500">Connect wallet to query</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Connect wallet to query</p>
             )}
             {!videoHash && walletAddress && (
-                <p className="text-sm font-mono text-gray-500">Upload a video first</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Upload or analyze a video first</p>
             )}
 
             {/* ── LOADING ── */}
             {status === 'loading' && (
-                <div className="border border-gray-300 p-4 text-center">
-                    <p className="font-mono text-sm">⏳ Reading from Stellar Testnet...</p>
+                <div style={{
+                    padding: 'var(--spacing-lg)',
+                    textAlign: 'center',
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px dashed var(--glass-border)',
+                }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                        ⏳ Reading from Stellar Testnet...
+                    </p>
                 </div>
             )}
 
             {/* ── FOUND — Academic proof table ── */}
             {status === 'found' && record && (
-                <div className="border border-black">
+                <div style={{
+                    borderRadius: 'var(--radius-md)',
+                    overflow: 'hidden',
+                    border: '1px solid var(--glass-border)',
+                }}>
                     {/* Header */}
-                    <div className="bg-black text-white px-3 py-2">
-                        <p className="font-bold text-sm uppercase tracking-wide">
-                            ✅ Blockchain Verification Proof
+                    <div style={{
+                        background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-violet) 100%)',
+                        padding: '12px 16px',
+                    }}>
+                        <p style={{
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            color: 'white',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                        }}>
+                            <span>✅</span> Blockchain Verification Proof
                         </p>
                     </div>
 
                     {/* Data table */}
-                    <table className="w-full font-mono text-sm">
+                    <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        background: 'var(--bg-secondary)',
+                        fontSize: '14px',
+                    }}>
                         <tbody>
                             <Row label="Video Hash" value={record.video_hash} truncate />
                             <Row label="Submitter" value={record.submitter} truncate />
@@ -124,8 +187,14 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
 
                     {/* Footer */}
                     {totalCount !== null && (
-                        <div className="border-t border-gray-300 px-3 py-2 text-xs text-gray-500 font-mono">
-                            Total on-chain verifications: {totalCount}
+                        <div style={{
+                            padding: '10px 16px',
+                            fontSize: '12px',
+                            color: 'var(--text-tertiary)',
+                            background: 'rgba(0,0,0,0.2)',
+                            borderTop: '1px solid var(--glass-border)',
+                        }}>
+                            Total on-chain verifications for this wallet: {totalCount}
                         </div>
                     )}
                 </div>
@@ -133,30 +202,35 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
 
             {/* ── NOT FOUND ── */}
             {status === 'not_found' && (
-                <div className="border border-gray-300 p-4">
-                    <p className="font-mono text-sm text-yellow-700">⚠️ No record found</p>
-                    <p className="font-mono text-xs text-gray-500 mt-1">
+                <div style={{
+                    padding: 'var(--spacing-md)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(255, 159, 10, 0.1)',
+                    border: '1px solid var(--warning)',
+                }}>
+                    <p style={{ fontSize: '14px', color: 'var(--warning)', fontWeight: '600' }}>⚠️ No record found</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                         No verification exists for this video hash + wallet combination.
                     </p>
-                    {totalCount !== null && (
-                        <p className="font-mono text-xs text-gray-500 mt-1">
-                            Total on-chain verifications: {totalCount}
-                        </p>
-                    )}
                 </div>
             )}
 
             {/* ── ERROR ── */}
             {status === 'error' && errorMsg && (
-                <div className="border border-red-300 bg-red-50 p-4">
-                    <p className="font-mono text-sm text-red-700">❌ Error: {errorMsg}</p>
+                <div style={{
+                    padding: 'var(--spacing-md)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(255, 69, 58, 0.1)',
+                    border: '1px solid var(--error)',
+                }}>
+                    <p style={{ fontSize: '14px', color: 'var(--error)', fontWeight: '600' }}>❌ Error: {errorMsg}</p>
                 </div>
             )}
         </div>
     );
 }
 
-// Table row helper — clean, screenshot-ready layout
+// Table row helper — modern table styling
 function Row({
     label,
     value,
@@ -172,14 +246,28 @@ function Row({
         ? `${value.slice(0, 12)}...${value.slice(-12)}`
         : value;
 
-    let valueClass = 'text-gray-900';
-    if (highlight === 'red') valueClass = 'text-red-600 font-bold';
-    if (highlight === 'green') valueClass = 'text-green-700 font-bold';
+    let valueColor = 'var(--text-secondary)';
+    let fontWeight = '400';
+    if (highlight === 'red') { valueColor = 'var(--error)'; fontWeight = '600'; }
+    if (highlight === 'green') { valueColor = 'var(--success)'; fontWeight = '600'; }
 
     return (
-        <tr className="border-t border-gray-200">
-            <td className="px-3 py-2 text-gray-500 whitespace-nowrap w-36">{label}</td>
-            <td className={`px-3 py-2 break-all ${valueClass}`} title={value}>
+        <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
+            <td style={{
+                padding: '12px 16px',
+                color: 'var(--text-tertiary)',
+                width: '140px',
+                fontSize: '13px',
+                fontWeight: '500',
+            }}>
+                {label}
+            </td>
+            <td style={{
+                padding: '12px 16px',
+                color: valueColor,
+                fontWeight: fontWeight,
+                fontFamily: 'var(--font-mono)',
+            }} title={value}>
                 {displayValue}
             </td>
         </tr>
