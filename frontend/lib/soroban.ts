@@ -176,7 +176,7 @@ export async function submitVerification(
  */
 export async function getVerification(
     videoHash: string,
-    submitterAddress: string,
+    callerAddress: string, // Needed for RPC simulation fee payers
 ): Promise<VerificationRecord | null> {
 
     if (!CONTRACT_ID) {
@@ -184,7 +184,7 @@ export async function getVerification(
     }
 
     const contract = new Contract(CONTRACT_ID);
-    const account = await server.getAccount(submitterAddress);
+    const account = await server.getAccount(callerAddress);
 
     const tx = new TransactionBuilder(account, {
         fee: '100',
@@ -194,7 +194,6 @@ export async function getVerification(
             contract.call(
                 'get_verification',
                 hashToScVal(videoHash),
-                new Address(submitterAddress).toScVal(),
             ),
         )
         .setTimeout(30)

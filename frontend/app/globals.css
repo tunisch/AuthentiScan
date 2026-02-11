@@ -18,10 +18,12 @@
   --accent-cyan: #00e5ff;
   --accent-cyan-soft: rgba(0, 229, 255, 0.15);
 
-  /* High-End Typography */
+  /* High-End Typography - Optimized for WCAG AA Contrast */
   --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #475569;
+  --text-secondary: #cbd5e1;
+  /* Increased from #94a3b8 for better legibility */
+  --text-tertiary: #94a3b8;
+  /* Increased from #475569 for better legibility */
 
   /* Semantic Colors */
   --success: #10b981;
@@ -46,6 +48,8 @@
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
 }
+
+/* tailwindcss-ignore */
 
 * {
   margin: 0;
@@ -129,6 +133,7 @@ body::after {
 .text-gradient {
   background: var(--brand-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

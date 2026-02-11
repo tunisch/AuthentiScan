@@ -45,6 +45,48 @@ graph TD
 
 ---
 
+## 🏛️ Monorepo Architecture
+
+AuthentiScan is organized as a unified monorepo to ensure tight integration between the forensic engine and the blockchain layer.
+
+```mermaid
+graph LR
+    subgraph "Root"
+        R[README]
+        L[LICENSE]
+    end
+    subgraph "Frontend (Next.js 14)"
+        FA[App Router]
+        FC[UI Components]
+        FL[Stellar SDK Integration]
+    end
+    subgraph "Contract (Soroban)"
+        RS[Rust Source]
+        RW[WASM Binary]
+        RT[Unit Tests]
+    end
+    FA --> FL
+    FL <--> RS
+```
+
+---
+
+## 🔒 Security & Trust Model
+
+### 1. Client-Side Cryptography
+AuthentiScan prioritizes user privacy and data integrity.
+- **Privacy:** Video files never leave the client's machine. Only the calculated **SHA-256 fingerprint** is transmitted to the blockchain.
+- **Integrity:** Hashing is performed using the browser's native `SubtleCrypto` API, ensuring resistance against tampering during ingestion.
+
+### 2. On-Chain Immutability
+- **Hardened Logic:** Once a verification is anchored to the Stellar ledger, it is **absolutely immutable**. The platform does not support "Update" or "Delete" operations for existing truth anchors.
+- **Authorization:** Every transaction requires a cryptographic signature from a verified auditor using the **Freighter Wallet**. Unauthorized submissions are rejected at the protocol level (`require_auth`).
+
+### 3. Global Unique Protection
+- **One Truth:** The smart contract enforces global uniqueness. A specific video hash can only be verified once, preventing conflicting diagnostic reports for the same content.
+
+---
+
 ## 🚀 Developer Quick-Start
 
 ### 1. Prerequisites
