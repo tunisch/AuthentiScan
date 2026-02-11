@@ -1,72 +1,82 @@
 # 🛡️ AuthentiScan: Trust Infrastructure for the AI Age
 
-AuthentiScan is an industrial-grade "Truth Anchor" platform that converges **Advanced AI Diagnostics** with **Stellar Blockchain Immutability** to verify and secure video authenticity.
+[![Stellar](https://img.shields.io/badge/Blockchain-Stellar-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-In an era of ubiquitous deepfakes, AuthentiScan provides a cryptographic audit trail that allows media organizations, verification labs, and individuals to anchor digital proof of reality directly to a decentralized ledger.
+AuthentiScan is an industrial-grade **"Truth Anchor"** platform that converges **Advanced AI Diagnostics** with **Stellar Blockchain Immutability** to verify and secure video authenticity.
+
+---
+
+## 📺 System Preview
+
+![AuthentiScan Hero Preview](docs/assets/hero-preview.webp)
+*The AuthentiScan Dashboard: Real-time telemetry meets cryptographic reliability.*
 
 ---
 
 ## 💎 Core Pillars
 
-- **AI Forensic Diagnostics:** Multi-modal analysis covering spatial anomalies, temporal stability, and spectral audio consistency.
-- **Cryptographic Anchoring:** Every verification record generates a unique SHA-256 fingerprint anchored to the Stellar Testnet.
-- **Immutable Audit Trail:** Once a record is "Broadcasting" to the ledger, it becomes a permanent, tamper-proof record of truth.
-- **Transparency First:** Integrated explorer telemetry allows anyone to verify the provenance of a video independently.
+- **🛡️ AI Forensic Diagnostics:** Multi-modal analysis covering spatial anomalies, temporal stability, and spectral audio consistency.
+- **🔗 Cryptographic Anchoring:** Every verification record generates a unique SHA-256 fingerprint anchored to the Stellar Testnet.
+- **⏳ Immutable Audit Trail:** Once a record is broadcasting to the ledger, it becomes a permanent, tamper-proof record of truth.
+- **👁️ Transparency First:** Integrated explorer telemetry allows anyone to verify the provenance of a video independently.
 
 ---
 
-## 🛠️ Technical Architecture
+## 🛠️ How it Works (Interactive Flow)
 
 ```mermaid
-graph LR
-    A[Video Source] --> B[Neural Diagnostics]
-    B --> C{AI Verdict}
-    C --> D[Cryptographic Hashing]
-    D --> E[Stellar Soroban Contract]
-    E --> F[Immutable Ledger Proof]
-    F --> G[Public Audit Log]
+graph TD
+    A[Video Selection] --> B[Client-Side Hashing]
+    B --> C[Neural Engine Analysis]
+    C --> D[Diagnostic Metadata Generation]
+    D --> E[Stellar Ledger Anchor]
+    E --> F[Immutable Audit Log]
+    F --> G[Public Verification Proof]
 ```
+
+### 1. Verification Journey
+1.  **Ingestion:** Select a video (locally or via URL). The system performs **Zero-Knowledge Ingestion** where the file stays in your browser.
+2.  **Diagnostics:** AI models scan for pixel jitters and spectral deviations.
+3.  **Anchoring:** Sign a transaction via **Freighter Wallet** to store results on-chain.
+4.  **Audit:** Retrieve clinical-grade proof from the Stellar Network at any time using the video hash.
 
 ---
 
-## 🚀 Quick Start for Developers
+## 🚀 Developer Quick-Start
 
-### 1. Project Prerequisites
-| Tool | Requirement |
-| :--- | :--- |
-| **Node.js** | v18.0+ |
-| **Rust** | Stable toolchain |
-| **Stellar CLI** | Modern version |
-| **Freighter Wallet** | Browser Extension |
+### 1. Prerequisites
+- **Node.js** (v18+) & **npm**
+- **Rust Toolchain** (with `wasm32-unknown-unknown` target)
+- **Stellar CLI** ([Install Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup))
+- **Freighter Wallet Extension**
 
-### 2. Global Setup
-
+### 2. Smart Contract Setup
 ```bash
-# Clone the repository
-git clone https://github.com/tunisch/block-chain-project
-cd block_chain_project
-
-# 1. Build the Smart Contract
+# 1. Build the WASM binary
 cd contract
 stellar contract build
 
-# 2. Deploy to Testnet
+# 2. Configure network
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 
+# 3. Deploy
 stellar keys generate deployer --network testnet --fund
 stellar contract deploy --wasm target/wasm32-unknown-unknown/release/video_verification.wasm --source deployer --network testnet
 ```
+*Note: Save the returned **Contract ID** for the frontend setup.*
 
-### 3. Frontend Integration
-
-1.  **Environment Setup:** Create `frontend/.env.local`
+### 3. Frontend Launch
+1.  **Config:** Create `frontend/.env.local`
     ```env
-    NEXT_PUBLIC_CONTRACT_ID=YOUR_DEPLOYED_CONTRACT_ID
+    NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID
     NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
     ```
-2.  **Install & Launch:**
+2.  **Run:**
     ```bash
     cd frontend
     npm install
@@ -75,24 +85,15 @@ stellar contract deploy --wasm target/wasm32-unknown-unknown/release/video_verif
 
 ---
 
-## 🔐 Security & Integrity
-
-- **Deterministic Hashing:** AuthentiScan uses SHA-256 hashing in the browser (via `SubtleCrypto`) to ensure the original video content matches the on-chain record exactly.
-- **Non-Custodial:** AuthentiScan never stores your video. Analysis happens locally; only cryptographic proofs are anchored.
-- **Wallet Gating:** All ledger commits require explicit authorization via the **Freighter Wallet**. If the wallet is not detected, the system provides an automated onboarding redirection.
-
----
-
-## 🧪 Forensic Accuracy Notice
+## ⚖️ Forensic Accuracy Notice
 
 > [!IMPORTANT]
-> AI analysis is probabilistic and does not constitute definitive proof of authenticity. Final judgment should be supported by multi-modal forensic evidence and verified via the on-chain audit trail provided by this platform.
+> AI analysis is **probabilistic** and does not constitute definitive legal proof of authenticity. Final judgment should be supported by multi-modal forensic evidence. This platform provides the **Infrastructure of Trust**, but humans remain the final auditors.
 
 ---
 
 ## 👨‍💻 Developed by
 **Lead Researcher:** [Tunahan Türker Ertürk](https://www.linkedin.com/in/tunahanturkererturk/)
-**Source Repository:** [GitHub](https://github.com/tunisch/block-chain-project)
 
 ---
 © 2026 AuthentiScan Lab. Secure. Immutable. Verifiable.
