@@ -1,9 +1,13 @@
 # AuthentiScan: Video Authenticity Prototype
 
-[![Stellar](https://img.shields.io/badge/Blockchain-Stellar_Testnet-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
-[![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+![status](https://img.shields.io/badge/status-experimental-orange)
+![network](https://img.shields.io/badge/network-Stellar%20Testnet-blue)
+[![Stellar](https://img.shields.io/badge/Blockchain-Stellar_Testnet-black?style=flat&logo=stellar&logoColor=white)](https://stellar.org)
+![rust](https://img.shields.io/badge/contract-Rust%20%2F%20Soroban-9cf)
+![nextjs](https://img.shields.io/badge/frontend-Next.js-black)
+![hashing](https://img.shields.io/badge/content%20identity-SHA--256-yellow)
+[![demo](https://img.shields.io/badge/demo-YouTube-red)](https://www.youtube.com/watch?v=dQZeowQIR2Y)
+![license](https://img.shields.io/badge/license-MIT-green)
 
 AuthentiScan is an experimental full-stack dApp that demonstrates the anchoring of video authenticity metadata to the blockchain. Users can upload a video or provide a URL to compute a **SHA-256 Content Hash**, which is then used as a **Content-Based Identity**. This identity is processed by a **Prototype AI Analysis Module (Simulated)** and anchored as an immutable **Verification Record** on a Soroban smart contract.
 
