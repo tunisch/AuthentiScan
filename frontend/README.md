@@ -1,13 +1,13 @@
-# AuthentiScan: Prototype Frontend
+# AuthentiScan: Prototype UI
 
-An experimental user interface for the AuthentiScan project. Built with **Next.js 14**, this frontend demonstrates the interaction between video content hashing and Stellar Soroban smart contracts.
+This is the experimental frontend for the AuthentiScan project. Built on **Next.js 14**, it provides an interface to demonstrate the lifecycle of a **Verification Record** on the **Stellar Testnet**.
 
-## Key Interface Elements
+## Prototype Highlights
 
-- **Verification Visuals:** Prototype confidence meters and frame-by-frame analysis grids.
-- **Ledger Integration:** Demonstration-ready interaction with Soroban contracts utilizing the Stellar SDK and Freighter Wallet.
-- **Workflow Tracking:** Basic transaction state monitoring (Signing → Broadcasting → Confirming).
-- **Responsive Theme:** Modern dark-themed interface built with Vanilla CSS and React.
+- **Verification Visuals:** Prototype confidence indicators and frame-analysis grids that visualize **Prototype AI Analysis** data.
+- **Ledger Connectivity:** Integration with Soroban contracts using the Stellar SDK and Freighter Wallet.
+- **Transaction Telemetry:** Basic tracking of ledger state transitions (Signing → Broadcasting → Confirming).
+- **Responsive Theme:** Modern dark-themed interface designed for demonstration and research.
 
 ---
 
@@ -15,13 +15,13 @@ An experimental user interface for the AuthentiScan project. Built with **Next.j
 
 - **Framework:** Next.js 14 (App Router)
 - **Engine:** React & TypeScript
-- **Styling:** CSS-in-JS & Vanilla CSS
-- **SDK Integration:** `@stellar/stellar-sdk` & `@stellar/freighter-api`
-- **Client-Side Hashing:** In-browser SHA-256 via the Web Crypto API (`crypto.subtle`)
+- **Styling:** Vanilla CSS (Responsive Layouts)
+- **SDK:** `@stellar/stellar-sdk` & `@stellar/freighter-api`
+- **Identity Logic:** Client-side **Content-Based Identity** generation via `crypto.subtle` (SHA-256).
 
 ---
 
-## Local Development
+## Local Setup
 
 ### 1. Configuration
 Create a `.env.local` file in the `/frontend` directory:
@@ -30,12 +30,9 @@ NEXT_PUBLIC_CONTRACT_ID=YOUR_TESTNET_CONTRACT_ID
 NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 ```
 
-### 2. Setup
+### 2. Run Development Server
 ```bash
-# Install dependencies
 npm install
-
-# Launch development server
 npm run dev
 ```
 
@@ -43,25 +40,25 @@ npm run dev
 
 ## Validation Procedures
 
-The frontend includes basic validation scripts to verify hashing consistency and UI state logic during development.
+The frontend includes a set of validation scripts to verify the consistency of cryptographic operations and state transitions.
 
 ```bash
 # Run validation scripts
 node tests/validate.mjs
 ```
 
-**Testing Focus:**
-- **Hash Consistency:** Verifying that the same file produces identical SHA-256 results.
-- **UI State Map:** Ensuring the "Ingest → Analyze → Anchor → Verify" progression logic is sound.
-- **Mock Alignment:** Confirming UI outputs correctly reflect simulated forensic analysis data.
+**Areas Covered:**
+- **Identity Determinism:** Verifying that **Content-Based Identity** (SHA-256) is consistent.
+- **Workflow Integrity:** Validating the state machine from file ingest to ledger confirmation.
+- **Simulation Accuracy:** Ensuring UI components correctly reflect **Prototype AI Analysis** (mock) data.
 
 ---
 
 ## Project Disclosures
 
-- **Privacy:** Video data is processed locally in the browser; only the content hash is submitted to the network.
-- **Transparency:** The interface provides links to public Stellar Explorers for independent verification of on-chain records.
-- **Experimental Status:** The AI forensic module and "Industrial" aesthetic elements are currently prototypes intended for research and demonstration.
+- **Data Privacy**: No raw video content leaves the browser. Only the SHA-256 hash is transmitted to the network.
+- **Simulation Notice**: The AI forensic analysis indicators are currently part of a **Prototype AI Analysis** module and do not reflect real-time forensic detection.
+- **Stellar Testnet**: This interface is configured specifically for experimentation on the **Stellar Testnet**.
 
 ---
-*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*
+*© 2026 AuthentiScan — Experimental Research Prototype*

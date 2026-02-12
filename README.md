@@ -1,38 +1,30 @@
-# AuthentiScan — Video Authenticity Prototype on Stellar
+# AuthentiScan: Video Authenticity Prototype
 
 [![Stellar](https://img.shields.io/badge/Blockchain-Stellar_Testnet-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-AuthentiScan is an experimental full-stack dApp that demonstrates anchoring video authenticity metadata to the Stellar blockchain. Users can upload a video or provide a URL to compute a SHA-256 content hash, which is then processed by a prototype AI analysis module and recorded immutably on a Soroban smart contract.
+AuthentiScan is an experimental full-stack dApp that demonstrates anchoring video authenticity findings to the blockchain. Users can upload a video or provide a URL to compute a **Content-Based Identity** (SHA-256 hash), which is then processed by a **Prototype AI Analysis** module and stored as an immutable **Verification Record** on a Soroban smart contract.
 
-> [!NOTE]
-> This project is a **functional prototype** and is currently deployed on **Stellar Testnet**. It is intended for demonstration purposes and is not yet suitable for production use or as a source of legal proof.
+> [!CAUTION]
+> **Prototype Only:** This project is an experimental demonstration currently deployed on the **Stellar Testnet**. It is not suitable for legal verification, judicial proof, or production use. No professional security audit has been performed.
 
 ![AuthentiScan Hero Screenshot](docs/images/hero.png)
 
 ---
 
-## Features
+## Core Features (Prototype)
 
-- **Content-Based Identity** — Videos are identified by the SHA-256 hash of their raw bytes rather than transient URLs.
-- **Experimental AI Analysis** — A prototype forensic module provides probabilistic authenticity scores (simulated for demonstration).
-- **Stellar Ledger Anchoring** — Immutable recording of verification metadata to Soroban smart contracts.
-- **Auto-Verification** — Automatic blockchain lookup for previously anchored video hashes.
-- **Audit Trail** — Visibility into anchored records with direct links to Stellar Explorers.
-- **Wallet Authorization** — Submissions are signed and authorized via the Freighter wallet.
-- **Deterministic Pipeline** — Consistent hash generation for remote URLs using version-locked tools.
+- **Content-Based Identity** — Videos are identified by the SHA-256 hash of their raw bytes rather than transient URLs or filenames.
+- **Prototype AI Analysis** — A mock forensic module provides simulated authenticity scores for demonstration purposes.
+- **Stellar Testnet Anchoring** — Immutable recording of **Verification Records** to Soroban smart contracts.
+- **Auto-Verification** — Automatic blockchain lookup for previously anchored content hashes.
+- **Audit Interface** — Transparency into records with direct links to public Stellar Explorers.
+- **Wallet Authorization** — Submissions require cryptographic signatures via the Freighter wallet.
+- **Deterministic Processing** — Consistent hash generation for remote URLs using specific tool configurations.
 
 ![AuthentiScan Scanner Workflow](docs/images/analysis_flow.png)
-
----
-
-## Technical Concept: Content-Based Identity
-
-AuthentiScan prioritizes **Content-Based Identity**. All video inputs are resolved into canonical byte sequences and hashed. The hash serves as the unique identifier, ensuring that the same video produces the same on-chain record regardless of its location or filename.
-
-See [docs/experiments.md](docs/experiments.md) for detailed determinism verification data.
 
 ---
 
@@ -40,15 +32,15 @@ See [docs/experiments.md](docs/experiments.md) for detailed determinism verifica
 
 ```mermaid
 graph TD
-    subgraph "Client (Browser)"
+    subgraph "Client Environment"
         LF[Local File]
         RU[Remote URL]
     end
 
-    subgraph "Processing Logic"
+    subgraph "Experimental Pipeline"
         DL[yt-dlp Download]
-        CH[SHA-256 Hash]
-        AI[Mock AI Analysis]
+        CH[SHA-256 Identity]
+        AI[Prototype AI Analysis]
     end
 
     subgraph "Stellar Testnet"
@@ -61,7 +53,7 @@ graph TD
     RU --> DL --> CH
     CH --> AI --> FW --> SC --> SL
 
-    style SC fill:#e67e22,stroke:#fff,stroke-width:2px
+    style SC fill:#d35400,stroke:#fff,stroke-width:2px
     style SL fill:#27ae60,stroke:#fff,stroke-width:2px
     style CH fill:#2980b9,stroke:#fff,stroke-width:2px
 ```
@@ -70,35 +62,36 @@ graph TD
 
 ## Smart Contract
 
-The Soroban contract provides a minimalist API for anchoring and retrieving authenticity records.
+The Soroban contract manages the storage and retrieval of **Verification Records**.
 
 | Function | Description |
 |----------|-------------|
-| `submit_verification` | Anchor analysis metadata to the ledger |
-| `get_verification` | Query an existing record by content hash |
-| `get_verification_count` | Retrieve the total number of anchored records |
+| `submit_verification` | Anchor a new **Verification Record** to the ledger |
+| `get_verification` | Query an existing record by **Content-Based Identity** |
+| `get_verification_count` | Total number of records anchored during this experiment |
 
-**Technical Guarantees:**
-- **Immutability:** Records are write-once; no update or delete functions exist.
-- **Uniqueness:** The contract prevents duplicate entries for the same content hash.
+**Technical Specifications:**
+- **Immutability:** Records are write-once; no update or delete functionality is implemented.
+- **Unique Identification:** The contract uses the SHA-256 hash as a primary key to prevent duplicate entries.
+- **Auth Enforcement:** The contract uses the `require_auth` pattern to verify transaction signers.
 
 → Full API documentation and deployment guides: [contract/README.md](contract/README.md)
 
 ---
 
-## Quick Start
+## Quick Start (Demo Setup)
 
 ### Prerequisites
 
-| Tool | Recommended Version | Verification Command |
-|------|---------------------|----------------------|
+| Tool | Requirement | Verification |
+|------|-------------|--------------|
 | **Node.js** | v18+ | `node -v` |
 | **Rust** | v1.71+ | `rustc --version` |
-| **Stellar CLI** | Latest | `stellar --version` |
+| **Stellar CLI** | Recent | `stellar --version` |
 | **yt-dlp** | Latest | `yt-dlp --version` |
 | **WASM Target** | - | `rustup target add wasm32-unknown-unknown` |
 
-### 1. Deploy Contract (Testnet)
+### 1. Build & Deploy Contract
 
 ```bash
 cd contract
@@ -109,7 +102,7 @@ stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 
-# Setup deployer
+# Setup keys
 stellar keys generate deployer --network testnet --fund
 
 # Deploy
@@ -118,7 +111,7 @@ stellar contract deploy \
   --source deployer --network testnet
 ```
 
-### 2. Run Frontend
+### 2. Run Prototype Frontend
 
 ```bash
 cd frontend
@@ -133,23 +126,19 @@ npm run dev
 
 ---
 
-## Limitations & Project Scope
+## Scope & Limitations
 
-- **AI Accuracy**: The forensic engine is a prototype module. Results are probabilistic and intended for demonstration.
-- **Re-encoding**: Significant visual changes or re-encodes will result in different hashes.
-- **Testnet Status**: This project is currenty on Stellar Testnet for experimentation.
-
-→ For the full security model and threat assessment, see [SECURITY.md](SECURITY.md).
-
----
-
-## Developed by
-
-**Tunahan Türker Ertürk** — [LinkedIn](https://www.linkedin.com/in/tunahanturkererturk/)
-
-## License
-
-MIT — see [LICENSE](LICENSE) for details.
+- **Probabilistic Results**: The **Prototype AI Analysis** provides simulated confidence scores. Real forensic accuracy is a planned future enhancement.
+- **Byte Sensitivity**: This system is content-based, not perception-based. Re-encoding or compressing a video changes its **Content-Based Identity**.
+- **Privacy Assurance**: No raw video content is uploaded to the blockchain. Only the SHA-256 hash and metadata are recorded.
+- **Network Status**: Currently restricted to the **Stellar Testnet**.
 
 ---
-*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*
+
+## Project Info
+
+**Developed by:** Tunahan Türker Ertürk — [LinkedIn](https://www.linkedin.com/in/tunahanturkererturk/)  
+**License:** MIT
+
+---
+*© 2026 AuthentiScan — Experimental Research Prototype*

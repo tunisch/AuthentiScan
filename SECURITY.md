@@ -1,66 +1,62 @@
 # Security Model: AuthentiScan Prototype
 
-This document outlines the security architecture and trust assumptions for the AuthentiScan project. As an **experimental prototype**, it is designed to demonstrate concepts rather than provide production-grade security guarantees.
+This document outlines the security architecture and trust assumptions for the AuthentiScan project. As an **experimental prototype** deployed on the **Stellar Testnet**, it is designed to demonstrate concepts rather than provide production-ready security guarantees.
 
 ## Trust Architecture
 
 ```mermaid
 graph TD
-    subgraph "Client Environment (Untrusted)"
+    subgraph "Client Instance (Browser)"
         U[End User]
-        B[Browser Instance]
+        B[Local Hash Execution]
     end
 
-    subgraph "External Periphery (Trusted Environment)"
-        W[Freighter Wallet<br/>Signature Logic]
-        RPC[Soroban RPC<br/>Gateway]
+    subgraph "External Logic (Signed Interface)"
+        W[Freighter Wallet<br/>Auth Authority]
+        RPC[Soroban RPC<br/>Network Gateway]
     end
 
-    subgraph "Blockchain Layer (Immutable Logic)"
+    subgraph "Immutable Core (Ledger Logic)"
         SC[Smart Contract<br/>Prototype Code]
         L[Stellar Ledger<br/>Permanent State]
     end
 
     U --> B
-    B -->|hash + result| W
+    B -->|content_hash + result| W
     W -->|signed transaction| RPC
     RPC --> SC
     SC -->|ledger write| L
 
-    style SC fill:#e67e22,stroke:#fff,stroke-width:2px
+    style SC fill:#d35400,stroke:#fff,stroke-width:2px
     style L fill:#27ae60,stroke:#fff,stroke-width:2px
 ```
 
-## Abstract Security Properties
+## Security Properties (Prototype)
 
-| Property | Implementation Method | Status |
+| Property | Mechanism | Status |
 |----------|----------|--------|
-| **Content integrity** | SHA-256 Content Fingerprinting | ✅ Demonstrated |
-| **Record immutability** | Stellar Ledger + Write-Once Logic | ✅ Demonstrated |
-| **Submission Auth** | Freighter Wallet Integration | ✅ Enforced |
+| **Content Integrity** | SHA-256 **Content-Based Identity** | ✅ Demonstrated |
+| **Record Immutability** | Stellar Ledger + Write-Once Logic | ✅ Demonstrated |
+| **Submission Auth** | Freighter Wallet `require_auth` | ✅ Enforced |
 | **Duplicate Prevention** | Hash-Based Storage Keys | ✅ Enforced |
-| **Data Privacy** | Local Hashing (Raw video not stored) | ✅ By Design |
+| **Data Privacy** | Local Hashing (No raw video on-chain) | ✅ By Design |
 
-## Key Disclosures
+## Disclosure of Limitations
 
-- **AI Analysis is Probabilistic**: Confidence scores from the prototype forensic module are estimates and current research results. They do not constitute absolute proof or legal truth.
-- **Experimental Logic**: The smart contract and frontend code are prototypes and have not undergone a professional security audit.
-- **Hash-Based, Not Semantic**: The system identifies exact byte sequences. Minor re-encoding by platforms will result in different hashes, even if the visual content is identical.
-- **Testnet Deployment**: This is a laboratory project deployed on Stellar Testnet for demonstration and peer review.
-
-## Known Limitations
-
-| Constraint | Explanation | Impact |
-|-----------|-----------|--------|
-| **Re-encoding sensitivity** | Modern video platforms often transcode uploads, changing the byte sequence. | A visual duplicate may have a different hash than the original. |
-| **Mock AI Indicators** | Some diagnostic metrics in the UI are currently simulated for demonstration. | Provides a vision of future capability rather than current forensic power. |
-| **Environment Risks** | Browser-based hashing is subject to the security of the local machine. | Compromised endpoints could provide malicious input data. |
-
-## Path to Production (Future Work)
-
-- **Security Audits**: Professional review of smart contract Rust logic and frontend data handling.
-- **Mainnet Migration**: Secure key management, rate limiting, and robust administrative protocols.
-- **Decentralized AI Oracles**: Transitioning from local prototypes to decentralized forensic analysis providers.
+- **Not for Legal Use**: The **Verification Records** anchored by this system are experimental and do not constitute legal or judicial proof of authenticity.
+- **Probabilistic AI**: The **Prototype AI Analysis** uses mock forensic data. Real-world accuracy is not guaranteed in this version.
+- **No Professional Audit**: This project's code (contract and frontend) has not undergone a professional third-party security audit.
+- **Hash-Based Identification**: The system identifies bitstreams. Any modification to the video file (e.g., metadata change or re-compression) will result in a new **Content-Based Identity**.
 
 ---
-*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*
+
+## Technical Constraints
+
+| Constraint | Reason | Impact |
+|-----------|-----------|--------|
+| **Platform Transcoding** | Video platforms often re-encode files after upload. | Visual duplicates may produce different **Content-Based Identity** fingerprints. |
+| **Endpoint Security** | Hashing occurs in the user's browser environment. | Compromised client environments could manipulate analysis inputs before submission. |
+| **Testnet Dependency** | Currently limited to the **Stellar Testnet**. | Infrastructure is subject to the stability and state resets of the Testnet. |
+
+---
+*© 2026 AuthentiScan — Experimental Research Prototype*

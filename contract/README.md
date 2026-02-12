@@ -1,23 +1,25 @@
 # AuthentiScan: Prototype Smart Contract
 
-A Soroban smart contract for anchoring video authenticity analysis results to the Stellar blockchain. This contract is an **experimental prototype** intended for research and demonstration.
+This Soroban smart contract is an **experimental prototype** designed to anchor **Verification Records** for video content to the **Stellar Testnet**.
 
-## Deployment Context
+## Infrastructure Status
 
 - **Network:** Stellar Testnet
 - **Environment:** Soroban (Rust SDK)
-- **Status:** Functional Prototype
+- **Status:** Functional Prototype (Not Audited)
 
-## On-Chain Record Structure
+## On-Chain Data Model
+
+The contract stores the following structure for each **Verification Record**:
 
 ```rust
 pub struct VerificationRecord {
-    pub record_id: u32,               // Autoincrementing record ID
-    pub video_hash: BytesN<32>,       // SHA-256 fingerprint of video content
-    pub submitter: Address,           // Address of the submitting wallet
-    pub is_ai_generated: bool,        // Result from the prototype analysis module
+    pub record_id: u32,               // Autoincrementing unique ID
+    pub video_hash: BytesN<32>,       // Content-Based Identity (SHA-256)
+    pub submitter: Address,           // Submitting wallet address
+    pub is_ai_generated: bool,        // Result from Prototype AI Analysis
     pub confidence_score: u32,        // Probabilistic confidence (0-100)
-    pub timestamp: u64,               // Ledger time (approximate)
+    pub timestamp: u64,               // Approximate ledger time
 }
 ```
 
@@ -25,33 +27,33 @@ pub struct VerificationRecord {
 
 | Function | Parameters | Description |
 |----------|-----------|-------------|
-| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor a verification result to the ledger |
-| `get_verification` | `video_hash` | Retrieve an existing record by content hash |
-| `get_verification_count` | — | Get total count of anchored records |
+| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor a new **Verification Record** to the ledger |
+| `get_verification` | `video_hash` | Retrieve a record using its **Content-Based Identity** |
+| `get_verification_count` | — | Total records anchored in this prototype instance |
 
 ## Technical Properties
 
-- **Immutability:** The contract is designed with no update or delete functions. Once a record is written, it remains on the ledger.
-- **Verification Integrity:** The contract uses the `video_hash` as a unique identifier to prevent duplicate entries for the same content.
-- **Auth Enforcement:** Submissions utilize the `require_auth` pattern, ensuring transactions are authorized by the `submitter` address.
+- **Write-Once Immutability:** The contract logic explicitly forbids the update or deletion of existing **Verification Records**.
+- **Unique Content Mapping:** The `video_hash` serves as a unique lookup key, preventing duplicate records for identical content.
+- **Cryptographic Authorization:** All submission transactions are enforced via the `require_auth` pattern, ensuring the `submitter` address authorized the entry.
 
 ---
 
-## Build & Deployment (Testnet)
+## Build & Demo Deployment
 
-### 1. Build
+### 1. Build WASM
 ```bash
 stellar contract build
 ```
 
-### 2. Network Configuration
+### 2. Configure Testnet Identity
 ```bash
-# Add Testnet
+# Add Stellar Testnet
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 
-# Setup deployer
+# Setup keys
 stellar keys generate deployer --network testnet --fund
 ```
 
