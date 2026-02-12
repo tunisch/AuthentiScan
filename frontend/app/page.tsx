@@ -251,10 +251,12 @@ export default function Home() {
                 </>
               )}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', alignItems: 'start' }}>
-              <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
-              <VerificationHistory />
-            </div>
+            {address && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', alignItems: 'start' }}>
+                <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
+                <VerificationHistory />
+              </div>
+            )}
           </div>
         </div>
       </div>
