@@ -7,6 +7,8 @@
 
 AuthentiScan is a full-stack Stellar dApp that anchors AI-based video authenticity analysis results to the blockchain. Users upload a video (or provide a URL), the system computes a SHA-256 content hash, runs AI forensic analysis, and writes the result immutably to a Soroban smart contract on Stellar Testnet. Anyone with the same video file can independently verify the on-chain record.
 
+![AuthentiScan Hero Screenshot](https://via.placeholder.com/1200x600?text=AuthentiScan+Hero+UI+Screenshot)
+
 > **Tech Stack:** Next.js 14 · Soroban/Rust · Stellar Testnet · Freighter Wallet · SHA-256 · yt-dlp
 
 ---
@@ -21,6 +23,8 @@ AuthentiScan is a full-stack Stellar dApp that anchors AI-based video authentici
 - 🔒 **Wallet-Signed Submissions** — Every record requires Freighter wallet authorization
 - 📎 **Dual Input** — Local file upload or remote URL with deterministic download
 - ⚡ **Re-Verification** — Same bytes → same hash → same on-chain proof
+
+![AuthentiScan Scanner Workflow](https://via.placeholder.com/1200x400?text=AuthentiScan+Scanner+and+Audit+Log+Screenshot)
 
 ---
 
