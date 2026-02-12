@@ -15,7 +15,7 @@ AuthentiScan is an experimental full-stack dApp that demonstrates the anchoring 
 ## 🎥 Demo Video
 This short demo showcases the AuthentiScan prototype running on the Stellar Testnet, including hashing, simulated AI analysis, and on-chain anchoring.
 
-[▶️ Watch the Demo Video](https://github.com/tunisch/AuthentiScan/releases/download/v0.1.0-prototype/AuthentiScan.mp4)
+[▶️ Watch on YouTube](https://youtu.be/dQZeowQlR2Y)
 
 ---
 
