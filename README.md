@@ -89,34 +89,68 @@ graph TD
 
 ### Prerequisites
 
-- Node.js v18+ & npm
-- Rust with `wasm32-unknown-unknown` target
-- [Stellar CLI](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup)
-- [Freighter Wallet](https://freighter.app/)
+Ensure you have the following tools installed and verified:
+
+| Tool | Version | Verification Command |
+|------|---------|----------------------|
+| **Node.js** | v18+ | `node -v` |
+| **Rust** | v1.71+ | `rustc --version` |
+| **Stellar CLI** | Latest | `stellar --version` |
+| **yt-dlp** | Latest | `yt-dlp --version` |
+| **WASM Target** | - | `rustup target add wasm32-unknown-unknown` |
 
 ### Deploy Contract
 
 ```bash
 cd contract
 stellar contract build
+
+# Configure testnet network
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
+
+# Generate and fund identity
 stellar keys generate deployer --network testnet --fund
+
+# Deploy to Testnet
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
   --source deployer --network testnet
-# Save the returned Contract ID
+# ⚠️ Copy the returned Contract ID (starts with 'C...')
 ```
 
 ### Run Frontend
 
 ```bash
 cd frontend
+
+# Setup environment variables
 echo "NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID" > .env.local
 echo "NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org" >> .env.local
-npm install && npm run dev
+
+npm install
+npm run dev
 ```
+
+### 🏁 Quick Start Verification Checklist
+
+- [ ] **Contract ID:** Is your deployed ID in `.env.local`?
+- [ ] **Network:** Is Freighter Wallet set to "Testnet"?
+- [ ] **Experimental Mode:** Is Freighter's experimental mode enabled?
+- [ ] **Auth:** Do you have `require_auth` triggers in the contract (verified via CLI)?
+- [ ] **Build:** Does `stellar contract build` execute without errors?
+
+---
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| **Contract ID Error** | Ensure `.env.local` contains the *current* deployed ID. Re-build if changed. |
+| **Wallet Not Connecting** | Open Freighter settings → Experimental Mode → Enable. |
+| **Download Failed** | Ensure `yt-dlp` is in your system PATH and can run standalone. |
+| **RPC Timeout** | Toggle between SDF and other public RPC nodes in `.env.local`. |
 
 ---
 
