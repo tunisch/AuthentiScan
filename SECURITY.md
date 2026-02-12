@@ -1,68 +1,66 @@
-# Security Model — AuthentiScan
+# Security Model: AuthentiScan Prototype
+
+This document outlines the security architecture and trust assumptions for the AuthentiScan project. As an **experimental prototype**, it is designed to demonstrate concepts rather than provide production-grade security guarantees.
 
 ## Trust Architecture
 
 ```mermaid
 graph TD
-    subgraph "Untrusted Zone"
+    subgraph "Client Environment (Untrusted)"
         U[End User]
-        B[Browser / Client]
+        B[Browser Instance]
     end
 
-    subgraph "Trusted Periphery"
-        W[Freighter Wallet<br/>Signature Authority]
-        RPC[Soroban RPC<br/>Network Gateway]
+    subgraph "External Periphery (Trusted Environment)"
+        W[Freighter Wallet<br/>Signature Logic]
+        RPC[Soroban RPC<br/>Gateway]
     end
 
-    subgraph "Immutable Core"
-        SC[Smart Contract<br/>Write-Once Logic]
+    subgraph "Blockchain Layer (Immutable Logic)"
+        SC[Smart Contract<br/>Prototype Code]
         L[Stellar Ledger<br/>Permanent State]
     end
 
     U --> B
-    B -->|content_hash + result| W
+    B -->|hash + result| W
     W -->|signed transaction| RPC
     RPC --> SC
-    SC -->|permanent write| L
+    SC -->|ledger write| L
 
-    style SC fill:#ff6a00,stroke:#fff,stroke-width:3px
-    style L fill:#10b981,stroke:#fff,stroke-width:3px
+    style SC fill:#e67e22,stroke:#fff,stroke-width:2px
+    style L fill:#27ae60,stroke:#fff,stroke-width:2px
 ```
 
-## Security Properties
+## Abstract Security Properties
 
-| Property | Mechanism | Status |
+| Property | Implementation Method | Status |
 |----------|----------|--------|
-| **Content integrity** | SHA-256 avalanche effect | ✅ Guaranteed |
-| **Record immutability** | Stellar consensus + write-once contract | ✅ Guaranteed |
-| **Submission authorization** | Freighter wallet signature | ✅ Enforced |
-| **Duplicate prevention** | Hash-based storage keys | ✅ Enforced |
-| **Privacy** | No raw video stored on-chain | ✅ By design |
-| **Re-verification** | Hash same bytes → query contract | ✅ Deterministic |
+| **Content integrity** | SHA-256 Content Fingerprinting | ✅ Demonstrated |
+| **Record immutability** | Stellar Ledger + Write-Once Logic | ✅ Demonstrated |
+| **Submission Auth** | Freighter Wallet Integration | ✅ Enforced |
+| **Duplicate Prevention** | Hash-Based Storage Keys | ✅ Enforced |
+| **Data Privacy** | Local Hashing (Raw video not stored) | ✅ By Design |
 
-## What This System Does NOT Do
+## Key Disclosures
 
-- Does not store video content on-chain (only hashes and metadata)
-- Does not guarantee AI analysis accuracy (probabilistic, not deterministic)
-- Does not prevent the same video from being submitted with different byte encodings
-- Does not provide legal proof (provides cryptographic evidence)
+- **AI Analysis is Probabilistic**: Confidence scores from the prototype forensic module are estimates and current research results. They do not constitute absolute proof or legal truth.
+- **Experimental Logic**: The smart contract and frontend code are prototypes and have not undergone a professional security audit.
+- **Hash-Based, Not Semantic**: The system identifies exact byte sequences. Minor re-encoding by platforms will result in different hashes, even if the visual content is identical.
+- **Testnet Deployment**: This is a laboratory project deployed on Stellar Testnet for demonstration and peer review.
 
 ## Known Limitations
 
-| Limitation | Explanation | Impact |
+| Constraint | Explanation | Impact |
 |-----------|-----------|--------|
-| **Platform re-encoding** | If a platform changes video encoding, the same visual content produces a different hash | Different hash = different identity. Correct behavior |
-| **AI is probabilistic** | Analysis confidence scores are estimates, not ground truth | Blockchain anchors the *result*, not *absolute truth* |
-| **Testnet deployment** | Current contract is on Stellar Testnet | Mainnet migration requires key rotation and security audit |
-| **Format sensitivity** | Different download formats produce different hashes | By design. Each format is a different byte sequence |
-| **No semantic matching** | Verifies exact content bytes, not visual similarity | Content-based, not perception-based identity |
+| **Re-encoding sensitivity** | Modern video platforms often transcode uploads, changing the byte sequence. | A visual duplicate may have a different hash than the original. |
+| **Mock AI Indicators** | Some diagnostic metrics in the UI are currently simulated for demonstration. | Provides a vision of future capability rather than current forensic power. |
+| **Environment Risks** | Browser-based hashing is subject to the security of the local machine. | Compromised endpoints could provide malicious input data. |
 
-## Key Rotation — Testnet to Mainnet
+## Path to Production (Future Work)
 
-> [!CAUTION]
-> **NEVER** reuse testnet Stellar keys on mainnet.
+- **Security Audits**: Professional review of smart contract Rust logic and frontend data handling.
+- **Mainnet Migration**: Secure key management, rate limiting, and robust administrative protocols.
+- **Decentralized AI Oracles**: Transitioning from local prototypes to decentralized forensic analysis providers.
 
-- Generate fresh keys: `stellar keys generate --network mainnet`
-- Store mainnet keys in secure vaults (AWS Secrets Manager, HashiCorp Vault)
-- **NEVER** commit mainnet keys to version control
-- Conduct a full security audit before mainnet deployment
+---
+*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*

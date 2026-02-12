@@ -1,36 +1,38 @@
-# AuthentiScan — Video Truth Infrastructure on Stellar
+# AuthentiScan — Video Authenticity Prototype on Stellar
 
 [![Stellar](https://img.shields.io/badge/Blockchain-Stellar_Testnet-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-AuthentiScan is a full-stack Stellar dApp that anchors AI-based video authenticity analysis results to the blockchain. Users upload a video (or provide a URL), the system computes a SHA-256 content hash, runs AI forensic analysis, and writes the result immutably to a Soroban smart contract on Stellar Testnet. Anyone with the same video file can independently verify the on-chain record.
+AuthentiScan is an experimental full-stack dApp that demonstrates anchoring video authenticity metadata to the Stellar blockchain. Users can upload a video or provide a URL to compute a SHA-256 content hash, which is then processed by a prototype AI analysis module and recorded immutably on a Soroban smart contract.
+
+> [!NOTE]
+> This project is a **functional prototype** and is currently deployed on **Stellar Testnet**. It is intended for demonstration purposes and is not yet suitable for production use or as a source of legal proof.
 
 ![AuthentiScan Hero Screenshot](docs/images/hero.png)
-
-> **Tech Stack:** Next.js 14 · Soroban/Rust · Stellar Testnet · Freighter Wallet · SHA-256 · yt-dlp
 
 ---
 
 ## Features
 
-- 🔐 **Content-Based Identity** — Video identity = SHA-256 hash of bytes, not URLs
-- 🤖 **AI Forensic Analysis** — Probabilistic deepfake detection with confidence scoring
-- ⛓️ **Stellar Blockchain Anchoring** — Write-once, immutable on-chain records
-- 🔍 **Auto-Verification** — Automatic blockchain lookup when a hash is computed
-- 📜 **Verification History** — Local audit trail with Stellar Explorer links
-- 🔒 **Wallet-Signed Submissions** — Every record requires Freighter wallet authorization
-- 📎 **Dual Input** — Local file upload or remote URL with deterministic download
-- ⚡ **Re-Verification** — Same bytes → same hash → same on-chain proof
+- **Content-Based Identity** — Videos are identified by the SHA-256 hash of their raw bytes rather than transient URLs.
+- **Experimental AI Analysis** — A prototype forensic module provides probabilistic authenticity scores (simulated for demonstration).
+- **Stellar Ledger Anchoring** — Immutable recording of verification metadata to Soroban smart contracts.
+- **Auto-Verification** — Automatic blockchain lookup for previously anchored video hashes.
+- **Audit Trail** — Visibility into anchored records with direct links to Stellar Explorers.
+- **Wallet Authorization** — Submissions are signed and authorized via the Freighter wallet.
+- **Deterministic Pipeline** — Consistent hash generation for remote URLs using version-locked tools.
 
 ![AuthentiScan Scanner Workflow](docs/images/analysis_flow.png)
 
 ---
 
-## Core Architectural Decision
+## Technical Concept: Content-Based Identity
 
-The project uses **Content-Based Identity**: all videos are resolved into canonical bytes and hashed with SHA-256. The hash is the identity. URLs are metadata references only. See [docs/experiments.md](docs/experiments.md) for determinism verification data.
+AuthentiScan prioritizes **Content-Based Identity**. All video inputs are resolved into canonical byte sequences and hashed. The hash serves as the unique identifier, ensuring that the same video produces the same on-chain record regardless of its location or filename.
+
+See [docs/experiments.md](docs/experiments.md) for detailed determinism verification data.
 
 ---
 
@@ -38,18 +40,18 @@ The project uses **Content-Based Identity**: all videos are resolved into canoni
 
 ```mermaid
 graph TD
-    subgraph "Client"
+    subgraph "Client (Browser)"
         LF[Local File]
         RU[Remote URL]
     end
 
-    subgraph "Pipeline"
+    subgraph "Processing Logic"
         DL[yt-dlp Download]
         CH[SHA-256 Hash]
-        AI[AI Analysis]
+        AI[Mock AI Analysis]
     end
 
-    subgraph "Blockchain"
+    subgraph "Stellar Testnet"
         FW[Freighter Wallet]
         SC[Soroban Contract]
         SL[Stellar Ledger]
@@ -59,33 +61,28 @@ graph TD
     RU --> DL --> CH
     CH --> AI --> FW --> SC --> SL
 
-    style SC fill:#ff6a00,stroke:#fff,stroke-width:2px
-    style SL fill:#10b981,stroke:#fff,stroke-width:2px
-    style CH fill:#3b82f6,stroke:#fff,stroke-width:2px
+    style SC fill:#e67e22,stroke:#fff,stroke-width:2px
+    style SL fill:#27ae60,stroke:#fff,stroke-width:2px
+    style CH fill:#2980b9,stroke:#fff,stroke-width:2px
 ```
-
-| Step | What Happens |
-|------|-------------|
-| 1 | User provides video (file or URL) |
-| 2 | SHA-256 content hash computed |
-| 3 | AI forensic engine evaluates authenticity |
-| 4 | User signs transaction via Freighter |
-| 5 | Smart contract stores hash + result immutably |
-| 6 | Anyone can re-hash same bytes to verify |
 
 ---
 
 ## Smart Contract
 
+The Soroban contract provides a minimalist API for anchoring and retrieving authenticity records.
+
 | Function | Description |
 |----------|-------------|
-| `submit_verification` | Anchor analysis result to ledger |
-| `get_verification` | Query record by content hash |
-| `get_verification_count` | Total anchored records |
+| `submit_verification` | Anchor analysis metadata to the ledger |
+| `get_verification` | Query an existing record by content hash |
+| `get_verification_count` | Retrieve the total number of anchored records |
 
-**Guarantees:** Write-once (no update/delete) · Duplicate prevention · Wallet signature required
+**Technical Guarantees:**
+- **Immutability:** Records are write-once; no update or delete functions exist.
+- **Uniqueness:** The contract prevents duplicate entries for the same content hash.
 
-→ Full API, Rust struct, error codes, deploy scripts: [contract/README.md](contract/README.md)
+→ Full API documentation and deployment guides: [contract/README.md](contract/README.md)
 
 ---
 
@@ -93,43 +90,40 @@ graph TD
 
 ### Prerequisites
 
-Ensure you have the following tools installed and verified:
-
-| Tool | Version | Verification Command |
-|------|---------|----------------------|
+| Tool | Recommended Version | Verification Command |
+|------|---------------------|----------------------|
 | **Node.js** | v18+ | `node -v` |
 | **Rust** | v1.71+ | `rustc --version` |
 | **Stellar CLI** | Latest | `stellar --version` |
 | **yt-dlp** | Latest | `yt-dlp --version` |
 | **WASM Target** | - | `rustup target add wasm32-unknown-unknown` |
 
-### Deploy Contract
+### 1. Deploy Contract (Testnet)
 
 ```bash
 cd contract
 stellar contract build
 
-# Configure testnet network
+# Configure testnet
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 
-# Generate and fund identity
+# Setup deployer
 stellar keys generate deployer --network testnet --fund
 
-# Deploy to Testnet
+# Deploy
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
   --source deployer --network testnet
-# ⚠️ Copy the returned Contract ID (starts with 'C...')
 ```
 
-### Run Frontend
+### 2. Run Frontend
 
 ```bash
 cd frontend
 
-# Setup environment variables
+# Setup environment
 echo "NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID" > .env.local
 echo "NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org" >> .env.local
 
@@ -137,66 +131,15 @@ npm install
 npm run dev
 ```
 
-### 🏁 Quick Start Verification Checklist
-
-- [ ] **Contract ID:** Is your deployed ID in `.env.local`?
-- [ ] **Network:** Is Freighter Wallet set to "Testnet"?
-- [ ] **Experimental Mode:** Is Freighter's experimental mode enabled?
-- [ ] **Auth:** Do you have `require_auth` triggers in the contract (verified via CLI)?
-- [ ] **Build:** Does `stellar contract build` execute without errors?
-
 ---
 
-## Troubleshooting
+## Limitations & Project Scope
 
-| Issue | Solution |
-|-------|----------|
-| **Contract ID Error** | Ensure `.env.local` contains the *current* deployed ID. Re-build if changed. |
-| **Wallet Not Connecting** | Open Freighter settings → Experimental Mode → Enable. |
-| **Download Failed** | Ensure `yt-dlp` is in your system PATH and can run standalone. |
-| **RPC Timeout** | Toggle between SDF and other public RPC nodes in `.env.local`. |
+- **AI Accuracy**: The forensic engine is a prototype module. Results are probabilistic and intended for demonstration.
+- **Re-encoding**: Significant visual changes or re-encodes will result in different hashes.
+- **Testnet Status**: This project is currenty on Stellar Testnet for experimentation.
 
----
-
-## Security & Limitations
-
-- **Content integrity:** SHA-256 guarantees tamper detection
-- **Immutability:** Stellar consensus + write-once contract
-- **Privacy:** No raw video stored on-chain
-- **AI is probabilistic:** Confidence scores are estimates, not ground truth
-- **Platform re-encoding:** Same visual content may produce different hashes after re-encode
-- ⚠️ Testnet keys must **never** be reused on mainnet
-
-→ Full security model, threat architecture, key rotation: [SECURITY.md](SECURITY.md)
-
----
-
-## Project Structure
-
-```
-block_chain_project/
-├── contract/               # Soroban smart contract (Rust)
-│   ├── src/lib.rs          # Contract logic
-│   └── README.md           # Full contract API docs
-├── frontend/               # Next.js 14 application
-│   ├── app/                # App Router pages
-│   ├── components/         # UI components
-│   └── lib/                # Core modules (hash, soroban, wallet)
-├── docs/
-│   └── experiments.md      # Download determinism experiments
-├── SECURITY.md             # Security model & key rotation
-└── README.md               # ← You are here
-```
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit changes (`git commit -m 'feat: add my feature'`)
-4. Push to branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
+→ For the full security model and threat assessment, see [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -207,3 +150,6 @@ block_chain_project/
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+---
+*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*

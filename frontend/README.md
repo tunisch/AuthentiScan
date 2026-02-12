@@ -1,69 +1,67 @@
-# 🖥️ AuthentiScan: Trust Infrastructure Frontend
+# AuthentiScan: Prototype Frontend
 
-The high-performance, investor-ready user interface for the AuthentiScan platform. Built on **Next.js 14**, it provides a seamless bridge between AI forensics and blockchain anchoring.
+An experimental user interface for the AuthentiScan project. Built with **Next.js 14**, this frontend demonstrates the interaction between video content hashing and Stellar Soroban smart contracts.
 
-## 🚀 High-End Features
+## Key Interface Elements
 
-- **AI Lab Visualizations:** Circular confidence meters, frame-by-frame heatmap grids, and audio spectrogram simulations.
-- **Immutable Ledger Integration:** Full-cycle interaction with Stellar Soroban contracts via the Stellar SDK and Freighter Wallet.
-- **Trust Telemetry:** Real-time transaction state tracking (Signing → Broadcasting → Confirming) with integrated block explorer links.
-- **GPU-Accelerated UX:** Cinematic dark mode with 60fps glassmorphism animations and responsive layout architecture.
+- **Verification Visuals:** Prototype confidence meters and frame-by-frame analysis grids.
+- **Ledger Integration:** Demonstration-ready interaction with Soroban contracts utilizing the Stellar SDK and Freighter Wallet.
+- **Workflow Tracking:** Basic transaction state monitoring (Signing → Broadcasting → Confirming).
+- **Responsive Theme:** Modern dark-themed interface built with Vanilla CSS and React.
 
 ---
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 - **Framework:** Next.js 14 (App Router)
 - **Engine:** React & TypeScript
-- **Styling:** Premium Vanilla CSS (GPU optimized)
-- **SDK:** `@stellar/stellar-sdk` & `@stellar/freighter-api`
-- **Security:** In-browser SHA-256 hashing via `crypto.subtle`
+- **Styling:** CSS-in-JS & Vanilla CSS
+- **SDK Integration:** `@stellar/stellar-sdk` & `@stellar/freighter-api`
+- **Client-Side Hashing:** In-browser SHA-256 via the Web Crypto API (`crypto.subtle`)
 
 ---
 
-## 🏛️ Local Environment
+## Local Development
 
 ### 1. Configuration
-Create a `.env.local` file in the root of the `/frontend` directory:
+Create a `.env.local` file in the `/frontend` directory:
 ```env
-NEXT_PUBLIC_CONTRACT_ID=YOUR_SOROBAN_CONTRACT_ID
+NEXT_PUBLIC_CONTRACT_ID=YOUR_TESTNET_CONTRACT_ID
 NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 ```
 
-### 2. Development
+### 2. Setup
 ```bash
 # Install dependencies
 npm install
 
-# Launch dev server
+# Launch development server
 npm run dev
 ```
 
 ---
 
-## 🧪 Validation Suite
+## Validation Procedures
 
-The frontend includes a rigorous test suite to ensure the integrity of cryptographic operations and UI state transitions.
+The frontend includes basic validation scripts to verify hashing consistency and UI state logic during development.
 
 ```bash
 # Run validation scripts
 node tests/validate.mjs
 ```
 
-**Key Areas Tested:**
-- **Hashing Determinism:** Verified SHA-256 consistency against known vectors.
-- **Workflow Integrity:** Validated state transitions from file receipt to ledger confirmation.
-- **Simulation Accuracy:** Confirmed AI mock engine heuristic alignment.
-- **Stellar SDK Connectivity:** Validated RPC and Contract interaction patterns.
+**Testing Focus:**
+- **Hash Consistency:** Verifying that the same file produces identical SHA-256 results.
+- **UI State Map:** Ensuring the "Ingest → Analyze → Anchor → Verify" progression logic is sound.
+- **Mock Alignment:** Confirming UI outputs correctly reflect simulated forensic analysis data.
 
 ---
 
-## 🛡️ Trust Infrastructure Integrity
+## Project Disclosures
 
-AuthentiScan is designed to prioritize **epistemic safety**. 
-- **Privacy:** Video data never leaves the client; only fingerprints are submitted.
-- **Transparency:** All blockchain transactions provide direct links to independent explorers for verification.
-- **Governance:** Integrated forensic warnings and technical disclosure panels ensure responsible reporting.
+- **Privacy:** Video data is processed locally in the browser; only the content hash is submitted to the network.
+- **Transparency:** The interface provides links to public Stellar Explorers for independent verification of on-chain records.
+- **Experimental Status:** The AI forensic module and "Industrial" aesthetic elements are currently prototypes intended for research and demonstration.
 
 ---
-© 2026 AuthentiScan Lab. Decoding reality, one block at a time.
+*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*

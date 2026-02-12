@@ -1,41 +1,43 @@
-# Deterministic Download Experiments
+# Investigation: Deterministic Download Feasibility
 
-This document records controlled experiments verifying that remote video downloads produce byte-identical outputs when using fixed parameters.
+This document records early experiments to verify if remote video downloads can produce byte-identical outputs when using fixed parameters, enabling consistent hash-based identity.
 
-## Experiment 1 — YouTube Shorts Determinism
+## Experiment 1 — Platform Determinism (YouTube)
 
 **Date:** 2026-02-12
-**Tool:** yt-dlp (version-locked)
+**Environment:** yt-dlp (locked version)
 
-### Pipeline
+### Testing Pipeline
 
-```
+The following command was used to retrieve a canonical MP4 stream:
+```bash
 yt-dlp -f "best[ext=mp4]" --no-cache-dir --no-part -o "output.mp4" <VIDEO_URL>
 ```
 
-### Results
+### Observations
 
-| Parameter | Download 1 | Download 2 |
+| Test Parameter | Trial 1 | Trial 2 |
 |-----------|-----------|-----------|
 | Video ID | `1Eo_ojxFde0` | `1Eo_ojxFde0` |
-| Format | `best[ext=mp4]` | `best[ext=mp4]` |
-| File Size | 415,919 bytes | 415,919 bytes |
-| SHA-256 | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
-| **Match** | ✅ **Identical** | ✅ **Identical** |
+| Requested Format | `best[ext=mp4]` | `best[ext=mp4]` |
+| Resulting File Size | 415,919 bytes | 415,919 bytes |
+| SHA-256 Fingerprint | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
+| **Integrity Match** | ✅ **Confirmed** | ✅ **Confirmed** |
 
-### Conclusion
+### Investigation Conclusion
 
-Same video ID + same format selection + same tool version = **byte-identical output** = **identical SHA-256 hash**.
+Preliminary results suggest that using a consistent tool version and explicit format selection can produce **byte-identical output** for the same remote resource. This supports the feasibility of a **hash-based identity** model for digital assets, provided that:
+- `yt-dlp` versions are strictly managed.
+- Format selection remains constant across different clients.
+- Content caching or partial downloads are disabled.
 
-This validates the feasibility of content-based identity for remotely sourced videos, provided:
-- `yt-dlp` version is locked
-- Format selection is explicit (`best[ext=mp4]`)
-- Caching is disabled (`--no-cache-dir --no-part`)
+### Known Technical Constraints
 
-### Known Limitations
-
-| Limitation | Impact |
+| Constraint | Description |
 |-----------|--------|
-| Platform re-encoding | If a platform changes its video encoding, the same visual content will produce a different hash. This is correct behavior; the system identifies byte content, not visual similarity. |
-| Format sensitivity | Different download formats (720p vs 1080p) produce different hashes. Each format is a different byte sequence. |
-| Tool version dependency | A `yt-dlp` update could change download behavior. Version locking is mandatory. |
+| **Server-Side Re-encoding** | If the hosting platform modifies the underlying file (e.g., for transcoding), the content hash will change. This accurately reflects a change in the digital asset. |
+| **Stream Variance** | Different resolutions or codecs produce different hashes. The system identifies specific byte sequences, not visual semantics. |
+| **Client Divergence** | Variations in tool configuration across different environments may impact the deterministic nature of the fingerprint. |
+
+---
+*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*

@@ -1,79 +1,75 @@
-# Video Verification Smart Contract
+# AuthentiScan: Prototype Smart Contract
 
-Soroban smart contract for anchoring video authenticity analysis results to the Stellar blockchain.
+A Soroban smart contract for anchoring video authenticity analysis results to the Stellar blockchain. This contract is an **experimental prototype** intended for research and demonstration.
 
-## Network
+## Deployment Context
 
-- **Chain:** Stellar Testnet
-- **Language:** Rust → WASM (Soroban SDK)
-- **Storage:** Persistent (TTL-managed)
+- **Network:** Stellar Testnet
+- **Environment:** Soroban (Rust SDK)
+- **Status:** Functional Prototype
 
 ## On-Chain Record Structure
 
 ```rust
 pub struct VerificationRecord {
-    pub record_id: u32,               // Unique Record ID
-    pub video_hash: BytesN<32>,       // Video SHA-256 hash (content identity)
-    pub submitter: Address,           // Submitter wallet address
-    pub is_ai_generated: bool,        // AI analysis verdict
-    pub confidence_score: u32,        // Confidence score (0-100)
-    pub timestamp: u64,               // Ledger timestamp
+    pub record_id: u32,               // Autoincrementing record ID
+    pub video_hash: BytesN<32>,       // SHA-256 fingerprint of video content
+    pub submitter: Address,           // Address of the submitting wallet
+    pub is_ai_generated: bool,        // Result from the prototype analysis module
+    pub confidence_score: u32,        // Probabilistic confidence (0-100)
+    pub timestamp: u64,               // Ledger time (approximate)
 }
 ```
 
-## Contract Functions
+## Contract API
 
 | Function | Parameters | Description |
 |----------|-----------|-------------|
-| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor analysis result to ledger |
-| `get_verification` | `video_hash, submitter` | Query existing record by content hash |
-| `get_verification_count` | — | Total number of anchored records |
+| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor a verification result to the ledger |
+| `get_verification` | `video_hash` | Retrieve an existing record by content hash |
+| `get_verification_count` | — | Get total count of anchored records |
 
-## Error Codes
+## Technical Properties
 
-| Code | Name | Description |
-|------|------|-------------|
-| 1 | `InvalidConfidence` | Confidence score must be 0-100 |
-| 2 | `AlreadyVerified` | Video hash already registered (immutability protection) |
-| 3 | `Unauthorized` | Caller is not authorized |
-| 4 | `NotFound` | Verification record not found |
-| 5 | `InvalidHash` | Video hash is invalid |
+- **Immutability:** The contract is designed with no update or delete functions. Once a record is written, it remains on the ledger.
+- **Verification Integrity:** The contract uses the `video_hash` as a unique identifier to prevent duplicate entries for the same content.
+- **Auth Enforcement:** Submissions utilize the `require_auth` pattern, ensuring transactions are authorized by the `submitter` address.
 
-## Guarantees
+---
 
-- **Write-once:** No `update` or `delete` functions exist
-- **Duplicate prevention:** Re-submitting the same hash returns existing `record_id`
-- **Cryptographic auth:** Every submission requires wallet signature (`require_auth`)
-- **Immutability:** Records cannot be modified after anchoring
+## Build & Deployment (Testnet)
 
-## Build & Deploy
-
+### 1. Build
 ```bash
-# Build
 stellar contract build
+```
 
-# Add testnet
+### 2. Network Configuration
+```bash
+# Add Testnet
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 
-# Generate deployer wallet
+# Setup deployer
 stellar keys generate deployer --network testnet --fund
+```
 
-# Deploy
+### 3. Deploy
+```bash
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
   --source deployer \
   --network testnet
 ```
 
-Save the returned **Contract ID** for frontend `.env.local`.
+---
 
-## Storage Keys
+## Disclosures & Limitations
 
-```rust
-pub enum DataKey {
-    Verification(BytesN<32>),  // Per-video record
-    VerificationCount,         // Global counter
-}
-```
+- **Experimental Code:** This contract has not undergone a professional security audit and should not be used in production environments.
+- **Testnet Only:** Deployment on Mainnet requires significant hardening, including formal verification and robust administrative controls.
+- **Data Persistence:** Persistent storage on Soroban involves TTL-managed state; ensure you understand the rent logic before scaling deployments.
+
+---
+*© 2026 AuthentiScan (Experimental Prototype by Tunahan Türker Ertürk)*
