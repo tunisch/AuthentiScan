@@ -49,6 +49,42 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleAnalysisComplete = (hash: string, result: any) => {
+    setVideoHash(hash);
+    setAnalysisResult(result);
+    setCurrentStep(1);
+  };
+
+  const [lastRecordId, setLastRecordId] = useState<number | null>(null);
+
+  const handleVerificationSubmitted = (recordId?: number) => {
+    setRefreshTrigger((prev) => prev + 1);
+    setCurrentStep(2);
+
+    // Store record_id for fallback display
+    if (recordId) {
+      setLastRecordId(recordId);
+    }
+
+    const newItem: HistoryItem = {
+      id: Date.now().toString(),
+      hash: videoHash || '',
+      is_ai_generated: analysisResult?.is_ai_generated || false,
+      confidence_score: analysisResult?.confidence_score || 0,
+      timestamp: Date.now(),
+    };
+    const updated = [newItem, ...history].slice(0, 10);
+    setHistory(updated);
+    localStorage.setItem('authentiscan_history', JSON.stringify(updated));
+  };
+
+  const handleReset = () => {
+    setVideoHash(null);
+    setAnalysisResult(null);
+    setCurrentStep(0);
+    setLastRecordId(null);
+  };
+
   useEffect(() => {
     if (analysisResult && videoHash) {
       setCurrentStep(2); // Analysis complete, ready to anchor
@@ -163,7 +199,7 @@ export default function Home() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             <VideoUpload onHashed={(h) => { setVideoHash(h); setCurrentStep(1); }} onAnalyzed={(r) => setAnalysisResult(r)} isConnected={!!address} />
             {analysisResult && videoHash && <AnalysisResult analysis={analysisResult} videoHash={videoHash} />}
-            {analysisResult && videoHash && <SubmitVerification analysis={analysisResult} videoHash={videoHash} walletAddress={address} signTransaction={sign} onSubmitted={() => { setRefreshTrigger(prev => prev + 1); setCurrentStep(3); }} />}
+            {analysisResult && videoHash && <SubmitVerification analysis={analysisResult} videoHash={videoHash} walletAddress={address} signTransaction={sign} onSubmitted={handleVerificationSubmitted} />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {address && (
@@ -176,7 +212,7 @@ export default function Home() {
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', alignItems: 'start' }}>
-              <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} />
+              <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
               <RealTimeFeed />
             </div>
             <div className="glass-card" style={{ padding: '40px', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 100%)' }}>

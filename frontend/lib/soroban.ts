@@ -298,6 +298,60 @@ export async function getVerificationCount(
 
     return scValToNative(retval) as number;
 }
+
+// ============================
+//  READ: get_verification_by_id (Alternative Query Method)
+// ============================
+
+/**
+ * Query verification by record_id instead of hash
+ * Useful when hash format mismatches occur (e.g., URL videos)
+ * 
+ * NOTE: This requires iterating through records since contract doesn't have
+ * a direct ID->Record mapping. For production, consider adding indexed storage.
+ */
+export async function getVerificationById(
+    recordId: number,
+    callerAddress: string,
+): Promise<VerificationRecord | null> {
+
+    if (!CONTRACT_ID) {
+        throw new Error('CONTRACT_ID is not set.');
+    }
+
+    // Strategy: Get total count, then try common hashes
+    // This is a workaround - production needs proper indexing
+    const count = await getVerificationCount(callerAddress);
+
+    if (recordId > count || recordId < 1) {
+        console.log(`[getVerificationById] Invalid ID: ${recordId} (count: ${count})`);
+        return null;
+    }
+
+    // For now, return null - this requires contract modification
+    // to support ID-based lookup
+    console.warn('[getVerificationById] Not implemented - contract needs get_verification_by_id function');
+    return null;
+}
+
+/**
+ * Get latest N verifications from events
+ * More reliable than hash-based queries for URL videos
+ */
+export async function getLatestVerifications(limit: number = 10): Promise<VerificationRecord[]> {
+    const events = await getLatestEvents();
+
+    // Events contain: recordId, videoHash, submitter
+    // We can display these without full record details
+    return events.map(event => ({
+        record_id: event.recordId,
+        video_hash: event.videoHash,
+        submitter: event.submitter,
+        is_ai_generated: false, // Not available in event
+        confidence_score: 0,     // Not available in event
+        timestamp: 0,            // Use ledger timestamp if needed
+    }));
+}
 /**
  * Fetch the latest 'submit' events from the contract
  * Acts as a real-time listener for the frontend
@@ -310,23 +364,36 @@ export async function getLatestEvents() {
         // Look back ~2000 ledgers (~3 hours) to find recent activity
         const startLedger = Math.max(0, latestLedgerResponse.sequence - 2000);
 
+        console.log('[getLatestEvents] Fetching events...');
+        console.log('[getLatestEvents] Latest ledger:', latestLedgerResponse.sequence);
+        console.log('[getLatestEvents] Start ledger:', startLedger);
+        console.log('[getLatestEvents] Contract ID:', CONTRACT_ID);
+
         const response = await server.getEvents({
             startLedger,
             filters: [
                 {
                     type: 'contract',
                     contractIds: [CONTRACT_ID],
-                    topics: [
-                        [xdr.ScVal.scvSymbol('submit').toXDR('base64')]
-                    ]
+                    // Remove topic filter - it's causing issues
+                    // Contract events are filtered by contractId only
                 }
             ],
             limit: 10
         });
 
+        console.log('[getLatestEvents] Response:', response);
+        console.log('[getLatestEvents] Events count:', response.events.length);
+
+        if (response.events.length > 0) {
+            console.log('[getLatestEvents] First event:', response.events[0]);
+        }
+
         return response.events.map(event => {
+            console.log('[getLatestEvents] Processing event:', event);
             const body = xdr.ScVal.fromXDR(event.value as unknown as string, 'base64');
             const data = scValToNative(body);
+            console.log('[getLatestEvents] Event data:', data);
             return {
                 id: event.id,
                 ledger: event.ledger,

@@ -11,7 +11,7 @@ interface SubmitVerificationProps {
     videoHash: string;
     walletAddress: string | null;
     signTransaction: (txXdr: string, opts: { networkPassphrase: string }) => Promise<string>;
-    onSubmitted: () => void;
+    onSubmitted: (recordId?: number) => void;
 }
 
 type TxState = 'idle' | 'signing' | 'broadcasting' | 'confirming' | 'success';
@@ -59,7 +59,7 @@ export default function SubmitVerification({
                 if (result.recordId) setRecordId(result.recordId);
                 // Trigger animation sequence
                 setTxState('success');
-                onSubmitted();
+                onSubmitted(result.recordId);
             }, 2500); // Slightly longer for the visual 'pulse' to feel weightier
 
         } catch (err: any) {

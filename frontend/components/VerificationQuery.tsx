@@ -7,9 +7,10 @@ interface VerificationQueryProps {
     videoHash: string | null;
     walletAddress: string | null;
     refreshTrigger: number;
+    lastRecordId?: number | null; // NEW: Pass record_id from successful submission
 }
 
-export default function VerificationQuery({ videoHash, walletAddress, refreshTrigger }: VerificationQueryProps) {
+export default function VerificationQuery({ videoHash, walletAddress, refreshTrigger, lastRecordId }: VerificationQueryProps) {
     const [record, setRecord] = useState<VerificationRecord | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [hasChecked, setHasChecked] = useState(false);
@@ -98,6 +99,33 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
                             <DataRow label="STATUS" value="IMMUTABLE" color="var(--accent-cyan)" />
                         </div>
                     </div>
+                </div>
+            ) : hasChecked && lastRecordId ? (
+                // NEW: Show partial success for URL videos
+                <div style={{
+                    padding: '30px', background: 'rgba(255, 165, 0, 0.03)',
+                    border: '1px solid rgba(255, 165, 0, 0.1)', borderRadius: '16px'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--brand-orange)', boxShadow: '0 0 10px var(--brand-orange)' }} />
+                        <p style={{ color: 'var(--brand-orange)', fontWeight: '900', fontSize: '14px' }}>
+                            [✓] TRANSACTION_CONFIRMED
+                        </p>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '20px' }}>
+                        Your verification was successfully anchored to the blockchain, but hash-based re-query failed.
+                        This is common for URL videos due to metadata variations.
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <DataRow label="ANCHOR_ID" value={`#${lastRecordId}`} color="var(--brand-orange)" />
+                        <DataRow label="STATUS" value="IMMUTABLE" color="var(--success)" />
+                        <div style={{ gridColumn: 'span 2' }}>
+                            <DataRow label="QUERY_HASH" value={videoHash || ''} isMono />
+                        </div>
+                    </div>
+                    <p style={{ color: 'var(--text-tertiary)', fontSize: '11px', marginTop: '16px', fontStyle: 'italic' }}>
+                        💡 Tip: Use the Stellar Explorer link from the success screen to verify your transaction.
+                    </p>
                 </div>
             ) : hasChecked ? (
                 <div style={{
