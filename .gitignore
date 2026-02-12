@@ -1,16 +1,12 @@
 # ============================================================================
-# AUTHENTISCAN MONOREPO - PRODUCTION .gitignore
+# AuthentiScan Monorepo - Prototype Hygiene
 # ============================================================================
-# Blockchain-grade security: Prevents accidental commits of secrets, keys,
-# build artifacts, and deployment credentials.
+# Engineering-focused ignore rules to prevent committing secrets, 
+# local environment files, and build artifacts.
 # ============================================================================
 
-# ============================================================================
-# 🔐 SECURITY-CRITICAL: SECRETS & CREDENTIALS
-# ============================================================================
-# NEVER commit these files - they contain private keys and deployment secrets
-
-# Stellar/Soroban wallet keys and seeds
+# 🔐 SECRETS & LOCAL CREDENTIALS
+# NEVER commit these files - they contain private keys and local seeds
 *.pem
 *.key
 *.seed
@@ -19,7 +15,7 @@
 identity.json
 .soroban/identity/
 
-# Environment variables (may contain contract IDs, RPC URLs, API keys)
+# Local Environment Variables
 .env
 .env.local
 .env.development.local
@@ -27,233 +23,106 @@ identity.json
 .env.production.local
 .env.*.local
 
-# Freighter wallet exports
+# Wallet Exports
 freighter-*.json
 wallet-backup-*.json
 
-# ============================================================================
-# 🦀 RUST / SOROBAN SMART CONTRACT
-# ============================================================================
-
-# Cargo build artifacts
+# 🦀 RUST / SOROBAN CONTRACT
+# Build output
 contract/target/
 **/target/
 **/*.rs.bk
-Cargo.lock  # Include this if library; exclude if binary
+Cargo.lock
 
-# WASM binaries (regenerate from source)
+# WASM artifacts
 *.wasm
 *.optimized.wasm
 
-# Soroban CLI artifacts
+# CLI Cache
 .soroban/
 .soroban-ledger/
 contract/.soroban/
 
-# Rust profiling and coverage
+# Coverage & Profiling
 *.profraw
 *.profdata
 contract/coverage/
+coverage/
 
-# ============================================================================
-# ⚛️ NODE.JS / NEXT.JS FRONTEND
-# ============================================================================
-
+# ⚛️ FRONTEND (NEXT.JS)
 # Dependencies
 frontend/node_modules/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
-# Next.js build output
+# Next.js Build & Cache
 frontend/.next/
 frontend/out/
 .next/
 out/
+.next/cache/
+frontend/.next/cache/
+.turbo/
 
-# Production build
+# Production-like Builds
 frontend/build/
 build/
 dist/
 
-# Next.js cache
-frontend/.next/cache/
-.next/cache/
-
-# Turbopack cache (Next.js 13+)
-.turbo/
-
-# Package manager lock files (choose one strategy)
-# Option 1: Commit lock files for reproducible builds (RECOMMENDED)
-# Option 2: Ignore them (uncomment below)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-# ============================================================================
-# 🧪 TESTING & COVERAGE
-# ============================================================================
-
-# Test coverage reports
-coverage/
+# 🧪 TESTING
 *.lcov
 .nyc_output/
-frontend/coverage/
-contract/coverage/
-
-# Jest cache
-.jest/
-frontend/.jest/
-
-# Playwright artifacts
 test-results/
 playwright-report/
 playwright/.cache/
+.jest/
 
-# ============================================================================
-# 🗂️ IDE & EDITOR CONFIGURATIONS
-# ============================================================================
-
-# VSCode
+# 🗂️ EDITOR & OS
 .vscode/
 !.vscode/extensions.json
-!.vscode/settings.json.example
-
-# JetBrains IDEs (IntelliJ, WebStorm, RustRover)
 .idea/
 *.iml
 *.iws
-
-# Vim
 *.swp
 *.swo
 *~
-
-# Emacs
-*~
-\#*\#
-.\#*
-
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
-
-# ============================================================================
-# 🖥️ OPERATING SYSTEM FILES
-# ============================================================================
-
-# macOS
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
 Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
 Desktop.ini
-$RECYCLE.BIN/
 
-# Linux
-.directory
-.Trash-*
-
-# ============================================================================
-# 📊 LOGS & TEMPORARY FILES
-# ============================================================================
-
-# Application logs
+# 📊 LOGS & TEMP
 *.log
 logs/
-*.log.*
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Temporary files
 *.tmp
 *.temp
 .cache/
 .temp/
 tmp/
 
-# ============================================================================
-# 🚀 DEPLOYMENT & CI/CD
-# ============================================================================
-
-# Vercel (Next.js deployment)
+# 🚀 DEPLOYMENT TOOLS
 .vercel
 .vercel.json
-
-# Docker
 docker-compose.override.yml
-.dockerignore
-
-# Terraform state (if using IaC)
 *.tfstate
 *.tfstate.backup
 .terraform/
 
-# ============================================================================
-# 📦 MONOREPO & BUILD TOOLS
-# ============================================================================
-
-# Turborepo cache
-.turbo/
-
-# Nx cache
-.nx/
-
-# Build artifacts
-*.tsbuildinfo
-.build/
-
-# ============================================================================
-# 🔬 BLOCKCHAIN-SPECIFIC
-# ============================================================================
-
-# Local blockchain state
-.soroban-ledger/
+# 🔬 BLOCKCHAIN STATE
 ledger-state/
-
-# Contract deployment receipts (may contain sensitive data)
 deployment-*.json
 contract-id-*.txt
-
-# Transaction logs
 tx-*.json
 transaction-history/
 
-# ============================================================================
-# 📝 DOCUMENTATION BUILD
-# ============================================================================
-
-# Generated documentation
+# 📝 DOCS BUILD
 docs/build/
 docs/.docusaurus/
 .docusaurus/
-docs/assets/
 
-# ============================================================================
-# 🎯 PROJECT-SPECIFIC EXCEPTIONS
-# ============================================================================
-
-# Keep example environment file as template
+# 🎯 EXCEPTIONS
 !.env.example
-!.env.template
-
-# Keep CI/CD configuration
 !.github/
-!.gitlab-ci.yml
-
-# Keep Docker configuration templates
 !Dockerfile
 !docker-compose.yml
-
-# ============================================================================
-# END OF .gitignore
-# ============================================================================

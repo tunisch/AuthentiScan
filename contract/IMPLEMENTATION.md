@@ -1,165 +1,82 @@
-# Soroban Smart Contract Implementation
+# Prototype: Soroban Smart Contract Implementation
 
-## ✅ Implementation Complete
+## ✅ Prototype Implementation Complete
 
-The Soroban smart contract has been successfully implemented according to the approved plan.
+The Soroban smart contract has been successfully implemented and tested as an experimental prototype for anchoring **Verification Records**.
 
-## 📁 Contract Structure
+## 📁 Repository Structure (Contract)
 
 ```
-soroban-contract/
-├── Cargo.toml           # Rust dependencies and build configuration
+contract/
+├── Cargo.toml           # Rust configuration and dependencies
 ├── src/
-│   └── lib.rs          # Main contract implementation
-├── README.md           # Contract documentation
-├── build.sh            # Linux/Mac build script
-└── build.ps1           # Windows build script
+│   └── lib.rs          # Main contract logic
+├── README.md           # Contract documentation & usage
+├── build.sh            # Build script (Linux/Mac)
+└── build.ps1           # Build script (Windows)
 ```
 
-## 🎯 Implemented Features
+## 🎯 Implementation Features (Prototype)
 
 ### Data Structures
-- ✅ `VerificationRecord` - Stores video hash, submitter, AI result, confidence, timestamp
-- ✅ `DataKey` - Composite key system for persistent storage
-- ✅ `Error` - Custom error types for validation and authentication
+- ✅ `VerificationRecord` - Anchors **SHA-256 Content Hash**, submitter, AI status, confidence, and timestamp.
+- ✅ `DataKey` - Scoped key system for persistent ledger storage.
+- ✅ `Error` - Type-safe error handling for validation and authentication.
 
-### Contract Functions
+### Contract API
 
-#### Write Operations
-- ✅ `submit_verification()` - Submit new verification with authentication
-  - Validates confidence score (0-100)
-  - Prevents duplicate submissions
-  - Requires wallet signature
-  - Stores in persistent storage with 1-year TTL
+#### Anchor Operations
+- ✅ `submit_verification()` - Anchor a new **Verification Record** using **Stellar Testnet** authentication.
+  - Validates score range (0-100).
+  - Prevents duplicate entries for the same **SHA-256 Content Hash**.
+  - Requires cryptographic signature via `require_auth()`.
 
-- ✅ `update_verification()` - Update existing verification
-  - Only original submitter can update
-  - Updates confidence score and timestamp
-  - Maintains data integrity
+#### Retrieval Operations
+- ✅ `get_verification()` - Query a specific record using its **SHA-256 Content Hash**.
+- ✅ `get_verification_count()` - Retrieve the total number of records anchored in this instance.
 
-#### Read Operations
-- ✅ `get_verification()` - Query specific verification by hash + submitter
-- ✅ `get_verification_count()` - Get total verification count
-- ✅ `get_verifications_by_submitter()` - Paginated query by submitter
+### Security Properties
+- ✅ **Authentication**: Enforced via `require_auth()` for all ledger writes.
+- ✅ **Duplicate Prevention**: Unique hash-based keying ensures one record per **Content-Based Identity**.
+- ✅ **Data Integrity**: Immutable write-once logic (no update/delete functionality).
 
-### Security Features
-- ✅ **Authentication**: All write operations require `submitter.require_auth()`
-- ✅ **Duplicate Prevention**: Composite key (hash + submitter) prevents re-submission
-- ✅ **Data Validation**: Confidence score range validation (0-100)
-- ✅ **Access Control**: Only submitter can update their verifications
+### Storage Model
+- ✅ **Persistent Storage**: Utilizes Soroban's persistent storage for long-term record retention.
+- ✅ **TTL Management**: Initial 1-year Time-To-Live (TTL) for record data.
 
-### Storage Design
-- ✅ **Persistent Storage**: Long-term data storage with 1-year TTL
-- ✅ **Composite Keys**: (video_hash, submitter) for unique verification records
-- ✅ **Global Counter**: Tracks total verification count for pagination
+## 🧪 Experimental Validation
 
-## 🧪 Unit Tests
+The prototype includes a test suite covering the following:
+- ✅ Successful record anchor and retrieval.
+- ✅ Prevention of duplicate **SHA-256 Content Hash** submissions.
+- ✅ Validation of confidence score ranges.
+- ✅ Error handling for unauthorized or invalid requests.
 
-Comprehensive test suite covering:
-- ✅ Submit and retrieve verification
-- ✅ Duplicate verification prevention
-- ✅ Invalid confidence score validation
-- ✅ Update verification functionality
-- ✅ Update non-existent verification error handling
-- ✅ Multiple submitters for same video hash
-
-## 📊 Code Quality
-
-- **Lines of Code**: ~450 lines
-- **Comments**: Extensive documentation on storage, authentication, and logic
-- **Error Handling**: 5 custom error types with clear semantics
-- **Test Coverage**: 6 comprehensive unit tests
-
-## 🔧 Build Instructions
+## 🔧 Build Instructions (Prototype Environment)
 
 ### Prerequisites
-1. Install Rust: https://rustup.rs/
-2. Install Stellar CLI: `cargo install --locked stellar-cli --features opt`
-3. Add WASM target: `rustup target add wasm32-unknown-unknown`
+1. Rust (v1.71+)
+2. Stellar CLI (`cargo install --locked stellar-cli`)
+3. WASM Target (`rustup target add wasm32-unknown-unknown`)
 
-### Build Commands
+### Compilation Commands
 
-**Windows (PowerShell):**
-```powershell
-cd soroban-contract
-.\build.ps1
+```bash
+cd contract
+stellar contract build
 ```
 
-**Linux/Mac:**
+**Manual Test Run:**
 ```bash
-cd soroban-contract
-chmod +x build.sh
-./build.sh
-```
-
-**Manual Build:**
-```bash
-# Run tests
 cargo test
-
-# Build WASM
-cargo build --target wasm32-unknown-unknown --release
-
-# Optimize (requires stellar CLI)
-stellar contract optimize --wasm target/wasm32-unknown-unknown/release/video_verification.wasm
 ```
 
-## 📦 Output Files
+## 🚀 Future Refinement Path
 
-After successful build:
-- `target/wasm32-unknown-unknown/release/video_verification.wasm` - Compiled contract
-- `target/wasm32-unknown-unknown/release/video_verification.optimized.wasm` - Optimized for deployment
-
-## 🚀 Deployment (Next Phase)
-
-The contract is ready for testnet deployment. Deployment steps will be:
-
-1. Configure Stellar CLI for testnet
-2. Generate/fund deployer account
-3. Deploy contract: `stellar contract deploy --wasm <path> --network testnet`
-4. Save contract ID for frontend integration
-
-## 📝 Key Implementation Decisions
-
-### Storage Strategy
-- Used **persistent storage** for all data to ensure survival across contract upgrades
-- Set TTL to 1 year (~6.3M ledgers) to balance cost and data retention
-- Composite key design allows multiple users to verify the same video hash
-
-### Authentication
-- Leveraged Soroban's built-in `require_auth()` for wallet signature verification
-- No additional access control needed - blockchain handles authentication
-
-### Error Handling
-- Created custom `Error` enum for clear, type-safe error reporting
-- Each error has semantic meaning for frontend error handling
-
-### Pagination Limitation
-- `get_verifications_by_submitter()` returns empty vector in current implementation
-- Noted in comments: requires event-based indexing or additional storage structure
-- Frontend can track user's own submissions client-side for MVP
-
-## ✅ Compliance with Plan
-
-This implementation strictly follows the approved plan:
-- ✅ All planned data structures implemented
-- ✅ All planned functions implemented
-- ✅ Storage design matches specification
-- ✅ Authentication logic as specified
-- ✅ Error handling strategy followed
-- ✅ No additional features added
-- ✅ No architectural changes made
-
-## 🎓 Academic Evaluation Points
-
-This contract demonstrates:
-1. **Soroban Proficiency**: Proper use of storage, authentication, and data types
-2. **Security Awareness**: Authentication, validation, duplicate prevention
-3. **Code Quality**: Well-documented, tested, and structured
-4. **Blockchain Understanding**: Appropriate use of on-chain storage
-5. **Best Practices**: Error handling, TTL management, composite keys
+Items identified for potential future enhancement beyond the prototype phase:
+1. **Event Indexing:** Implementing event-driven history tracking for better frontend pagination.
+2. **Mainnet Hardening:** Moving towards professional third-party audits and mainnet-grade key management.
+3. **Optimized TTL:** Dynamic TTL management based on record priority.
 
 ---
-
-**Status**: ✅ Ready for deployment and frontend integration
-**Next Step**: Deploy to Stellar testnet and integrate with Next.js frontend
+*© 2026 AuthentiScan — Experimental Research Prototype*

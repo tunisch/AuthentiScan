@@ -1,39 +1,40 @@
-# Professional PR Descriptions
+# PR Description Templates: Prototype Refinement
 
-Use these templates when submitting pull requests for documentation hardening.
-
----
-
-## PR A: README Cleanup & Documentation Layering
-
-**Title:** `docs: restructure README and decentralize technical specs`
-
-### Description
-This PR transitions the project to a "layered documentation" model. The main README is now focused on the value proposition and quick onboarding, while technical details have been moved to specialized files.
-
-### Changes
-- ✅ **README.md:** Reduced from 346 to ~150 lines. Focus on Features, Quick Start, and Architecture.
-- ✅ **docs/experiments.md:** Created to store byte-level verification data and download pipeline tests.
-- ✅ **contract/README.md:** Moved full Soroban API, Rust structs, and deployment guides here.
-- ✅ **SECURITY.md:** Centralized the trust model, security properties, and known limitations.
-
-### Rationale
-Increases accessibility for new developers while maintaining high-fidelity documentation for auditors.
+Use these templates when documenting changes to the experimental repository.
 
 ---
 
-## PR B: Add/Improve SECURITY.md & Threat Model
+## Template A: Prototype Documentation Alignment
 
-**Title:** `docs: harden security documentation and threat model`
+**Title:** `docs: align repository with experimental prototype status`
 
-### Description
-Formalizes the security architecture and threat model of the AuthentiScan platform.
+### Summary
+Transitions the documentation to an "experimental prototype" model, ensuring that technical claims match current capabilities.
 
-### Changes
-- 🛡️ **Trust Architecture:** Added Mermaid diagram showing Untrusted vs. Immutable zones.
-- 🔐 **Key Rotation:** Added mandatory policies for Testnet to Mainnet migration.
-- 📋 **Security Properties:** Documented content integrity, record immutability, and duplicate prevention mechanisms.
-- ⚠️ **Limitations Disclosure:** Clearly listed AI probabilistic nature and format sensitivity.
+### Refinements
+- ✅ **README.md:** Standardized terminology to **Content-Based Identity** and **Stellar Testnet**.
+- ✅ **SECURITY.md:** Clarified the probabilistic nature of the **Prototype AI Analysis module**.
+- ✅ **contract/README.md:** Emphasized the functional prototype status of the Soroban logic.
 
 ### Rationale
-Ensures the project meets production standards for security-sensitive blockchain applications.
+Ensures honest and transparent communication regarding the project's maturity and research goals.
+
+---
+
+## Template B: Security Disclosures & Limitations
+
+**Title:** `docs: update security disclosures and prototype limitations`
+
+### Summary
+Formalizes the current security properties and constraints of the AuthentiScan prototype.
+
+### Refinements
+- 📋 **Verification Records:** Documented the immutability and uniqueness properties.
+- ⚠️ **SHA-256 Content Hash:** Clearly listed sensitivity to file transcoding.
+- 🛡️ **Auth Authority:** Validated the `require_auth` implementation for submission anchoring.
+
+### Rationale
+Provides a technically grounded view of the prototype's trust architecture for researchers and peer reviewers.
+
+---
+*© 2026 AuthentiScan — Experimental Research Prototype*

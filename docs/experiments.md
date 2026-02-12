@@ -1,15 +1,15 @@
-# Investigation: Content-Based Identity Determinism
+# Investigation: Content Hashing Determinism
 
-This document records the experimental results for generating a consistent **Content-Based Identity** (SHA-256 hash) from remote video sources using deterministic download parameters.
+This document records early research findings confirming that remote video sources can produce a consistent **SHA-256 Content Hash** (the basis for **Content-Based Identity**) under fixed parameters.
 
-## Experiment: Platform Identity Consistency
+## Experiment: Platform Consistency
 
 **Date:** 2026-02-12
-**Environment:** Restricted yt-dlp configuration on **Stellar Testnet** prototype environment.
+**Environment:** **Stellar Testnet** experimental pipeline.
 
 ### Methodology
 
-The pipeline resolves remote URLs into a canonical byte stream to ensure that identical visual content (within the same bitstream) produces the same **Verification Record** on the ledger.
+The pipeline resolves remote URLs into a canonical byte stream to ensure that identical visual content results in the same **Verification Record** on the ledger.
 
 ```bash
 yt-dlp -f "best[ext=mp4]" --no-cache-dir --no-part -o "output.mp4" <VIDEO_URL>
@@ -17,28 +17,27 @@ yt-dlp -f "best[ext=mp4]" --no-cache-dir --no-part -o "output.mp4" <VIDEO_URL>
 
 ### Observations
 
-| Test Variable | Trial A | Trial B |
+| Resource ID | Trial A | Trial B |
 |-----------|-----------|-----------|
-| Resource ID | `1Eo_ojxFde0` | `1Eo_ojxFde0` |
-| Stream Format | `best[ext=mp4]` | `best[ext=mp4]` |
-| Byte Count | 415,919 bytes | 415,919 bytes |
-| **Content-Based Identity** | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
-| **Integrity Match** | ✅ **Confirmed** | ✅ **Confirmed** |
+| yt: `1Eo_ojxFde0` | 415,919 bytes | 415,919 bytes |
+| Format Target | `best[ext=mp4]` | `best[ext=mp4]` |
+| **SHA-256 Content Hash** | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
+| **Identity Match** | ✅ **Confirmed** | ✅ **Confirmed** |
 
-### Investigation Findings
+### Findings
 
-The experiment confirms that for a fixed tool version and format string, remote video downloads are byte-deterministic. This validates the **Content-Based Identity** model for the AuthentiScan prototype:
-- Identity is derived from the file's hash, not its location.
+Preliminary data confirms that for a fixed tool version and format selection, remote video downloads produce byte-identical output. This validates the **Content-Based Identity** model for the AuthentiScan prototype:
+- Identity is derived from the **SHA-256 Content Hash** of the file's bytes.
 - The same byte sequence will always resolve to the same **Verification Record**.
-- Version locking of download tools is required for cross-client consistency.
+- Version locking of download tools ensures cross-client consistency.
 
 ### Prototype Constraints
 
-| Constraint | Description |
-|-----------|--------|
-| **Transcoding Variance** | If a platform re-encodes a video (e.g., for different bitrates), the byte sequence changes, resulting in a new **Content-Based Identity**. |
-| **Format Sensitivity** | Different containers or resolutions produce different hashes. The system identifies specific bitstreams, not semantic visual content. |
-| **Tool Dependency** | Changes in the underlying downloader logic may impact the deterministic output. |
+| Constraint | Reason | Impact |
+|-----------|-----------|--------|
+| **Server-Side Transcoding** | Platforms may modify underlying files over time for optimization. | Content hashes will change, accurately reflecting a modified digital asset. |
+| **Format Variations** | Different storage formats or resolutions result in different bitstreams. | Each format represents a unique **Verification Record**. |
+| **Library Dependencies** | Changes in extraction tools can affect deterministic byte output. | Version pinning is required for environment consistency. |
 
 ---
 *© 2026 AuthentiScan — Experimental Research Prototype*
