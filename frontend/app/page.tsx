@@ -143,13 +143,13 @@ export default function Home() {
           <span style={{ fontWeight: '950', fontSize: '20px', letterSpacing: '-0.5px', color: 'white' }}>AUTHENTISCAN</span>
           <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)', margin: '0 12px' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
-            <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', letterSpacing: '1px' }}>CONTENT_IDENTITY: ACTIVE</span>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: address ? '#10b981' : '#f59e0b', boxShadow: address ? '0 0 10px #10b981' : '0 0 10px #f59e0b' }} />
+            <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', letterSpacing: '1px' }}>{address ? 'STELLAR_TESTNET: CONNECTED' : 'STELLAR_TESTNET: STANDBY'}</span>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-          <a href="#history" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '13px', letterSpacing: '1px' }}>HISTORY_LOG</a>
+          <a href="#scanner" onClick={(e) => { e.preventDefault(); document.getElementById('scanner')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '700', fontSize: '13px', letterSpacing: '1px', cursor: 'pointer' }}>VERIFY</a>
           <button
             onClick={address ? undefined : handleConnect}
             className={!address ? "btn-premium" : ""}
@@ -230,15 +230,27 @@ export default function Home() {
             {!existingRecord && analysisResult && videoHash && <SubmitVerification analysis={analysisResult} videoHash={videoHash} walletAddress={address} signTransaction={sign} onSubmitted={handleVerificationSubmitted} />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {address && (
-              <div className="glass-card" style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '24px' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,106,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,106,0,0.2)' }}>👤</div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px' }}>CONNECTED_NODE</p>
-                  <p style={{ fontSize: '15px', fontWeight: '800', color: 'white', fontFamily: 'var(--font-mono)' }}>{address.slice(0, 12)}...</p>
-                </div>
-              </div>
-            )}
+            <div className="glass-card" style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+              {address ? (
+                <>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(16,185,129,0.3)' }}>🔗</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px' }}>WALLET_CONNECTED</p>
+                    <p style={{ fontSize: '15px', fontWeight: '800', color: 'white', fontFamily: 'var(--font-mono)' }}>{address.slice(0, 12)}...</p>
+                  </div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                </>
+              ) : (
+                <>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,106,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,106,0,0.2)' }}>🔒</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px' }}>WALLET_STATUS</p>
+                    <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-secondary)' }}>Connect Freighter to anchor verifications</p>
+                  </div>
+                  <button onClick={handleConnect} className="btn-premium" style={{ padding: '8px 16px', fontSize: '11px' }}>CONNECT</button>
+                </>
+              )}
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', alignItems: 'start' }}>
               <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
               <VerificationHistory />
