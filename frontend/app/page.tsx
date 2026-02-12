@@ -144,7 +144,7 @@ export default function Home() {
           <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)', margin: '0 12px' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
-            <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', letterSpacing: '1px' }}>STELLAR_TESTNET: ACTIVE</span>
+            <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', letterSpacing: '1px' }}>CONTENT_IDENTITY: ACTIVE</span>
           </div>
         </div>
 
@@ -167,26 +167,30 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* 2. cinematic Hero */}
+      {/* 2. Hero — Content Identity Messaging */}
       <section style={{ padding: '200px 60px 100px', textAlign: 'center', maxWidth: '1200px', margin: '0 auto' }}>
         <div className="animate-premium">
-          <h1 style={{ fontSize: 'clamp(56px, 10vw, 110px)', fontWeight: '950', color: 'white', marginBottom: '24px', letterSpacing: '-4px', lineHeight: '0.85' }}>
-            DECODE THE <br /> <span className="text-gradient">DEEPFAKE AGE</span>
+          <p style={{ fontSize: '11px', fontWeight: '900', letterSpacing: '3px', color: 'var(--brand-orange)', marginBottom: '24px' }}>VIDEO TRUTH INFRASTRUCTURE</p>
+          <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: '950', color: 'white', marginBottom: '24px', letterSpacing: '-3px', lineHeight: '0.9' }}>
+            CONTENT IS <br /> <span className="text-gradient">IDENTITY</span>
           </h1>
-          <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '56px', maxWidth: '750px', margin: '0 auto 56px' }}>
-            AI-powered video authenticity verification. <br />
-            <span style={{ color: 'white', fontWeight: '700' }}>Anchored to Stellar blockchain for immutable proof.</span>
+          <p style={{ fontSize: '18px', color: 'var(--text-secondary)', maxWidth: '700px', margin: '0 auto 20px', lineHeight: '1.6' }}>
+            We don&apos;t verify links. We verify <span style={{ color: 'white', fontWeight: '800' }}>content</span>.<br />
+            SHA-256 content hash → AI analysis → <span style={{ color: 'white', fontWeight: '800' }}>Stellar blockchain anchor</span>.
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', maxWidth: '600px', margin: '0 auto 48px', fontStyle: 'italic' }}>
+            Same bytes, same hash, same truth. Always.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
-            <button className="btn-premium" onClick={() => window.scrollTo({ top: 900, behavior: 'smooth' })}>Launch Scanner</button>
-            <button className="btn-secondary" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>How it works</button>
+            <button className="btn-premium" onClick={() => document.getElementById('scanner')?.scrollIntoView({ behavior: 'smooth' })}>Verify Content</button>
+            <button className="btn-secondary" onClick={() => setIsDrawerOpen(!isDrawerOpen)}>Architecture</button>
           </div>
         </div>
         <div className={`drawer-content ${isDrawerOpen ? 'open' : ''}`} style={{ marginTop: '60px' }}>
           <div className="glass-card" style={{ padding: '40px', textAlign: 'left', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
-            <TechDetail title="Spatial Anomaly" desc="Pixel-level inconsistency detection." />
-            <TechDetail title="Temporal Consistency" desc="Verifies frame-to-frame stability." />
-            <TechDetail title="Spectral Deviation" desc="Voices and audio print mapping." />
+            <TechDetail title="Content Hash" desc="SHA-256 over canonical video bytes. Same file always produces the same fingerprint. One bit change = completely different hash." />
+            <TechDetail title="AI Forensics" desc="Probabilistic deepfake analysis — spatial anomaly, temporal stability, spectral deviation. Result is anchored, not the model." />
+            <TechDetail title="Stellar Anchor" desc="Content hash + AI verdict stored immutably on Stellar Testnet. Write-once, no update, no delete. Independently verifiable." />
           </div>
         </div>
       </section>
@@ -194,10 +198,10 @@ export default function Home() {
       {/* 3. Steps */}
       <div style={{ maxWidth: '800px', margin: '0 auto 80px', padding: '0 40px' }}>
         <div className="step-container">
-          <StepItem index={1} label="Upload" status={currentStep >= 1 ? 'completed' : currentStep === 0 ? 'active' : 'pending'} />
-          <StepItem index={2} label="Analysis" status={currentStep >= 2 ? 'completed' : currentStep === 1 ? 'active' : 'pending'} />
+          <StepItem index={1} label="Ingest" status={currentStep >= 1 ? 'completed' : currentStep === 0 ? 'active' : 'pending'} />
+          <StepItem index={2} label="Analyze" status={currentStep >= 2 ? 'completed' : currentStep === 1 ? 'active' : 'pending'} />
           <StepItem index={3} label="Anchor" status={currentStep >= 3 ? 'completed' : currentStep === 2 ? 'active' : 'pending'} />
-          <StepItem index={4} label="Audit" status={currentStep >= 4 ? 'completed' : currentStep === 3 ? 'active' : 'pending'} />
+          <StepItem index={4} label="Verify" status={currentStep >= 4 ? 'completed' : currentStep === 3 ? 'active' : 'pending'} />
         </div>
       </div>
 
@@ -239,27 +243,28 @@ export default function Home() {
               <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
               <VerificationHistory />
             </div>
-            <div className="glass-card" style={{ padding: '40px', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 100%)' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '24px' }}>Why Anchoring Matters</h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '24px' }}> AuthentiScan stores a cryptographic fingerprint and AI verdict on the Stellar ledger, creating a permanent, public audit trail.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <FeatureItem icon="🛡️" title="Security" desc="Cryptographic integrity." />
-                <FeatureItem icon="🔗" title="Immutable" desc="Records cannot be modified." />
+            <div className="glass-card" style={{ padding: '32px', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 100%)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '950', color: 'white', marginBottom: '20px', letterSpacing: '1px' }}>CONTENT_IDENTITY_MODEL</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <FeatureItem icon="🔐" title="Hash = Identity" desc="SHA-256 of video bytes. Not the URL, not the filename — the content itself." />
+                <FeatureItem icon="📎" title="URL = Metadata" desc="URLs are references, not identity. Same video at different URLs = same hash." />
+                <FeatureItem icon="⚡" title="Deterministic" desc="Same bytes in → same hash out. Cryptographically guaranteed. Always." />
+                <FeatureItem icon="🔗" title="Immutable Anchor" desc="Content hash + AI result written to Stellar. Write-once. No update. No delete." />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <footer style={{ background: '#000', padding: '100px 60px', borderTop: '1px solid rgba(255, 106, 0, 0.2)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between' }}>
+      <footer style={{ background: '#000', padding: '80px 60px', borderTop: '1px solid rgba(255, 106, 0, 0.2)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontWeight: '950', fontSize: '24px', color: 'white', marginBottom: '24px' }}>AUTHENTISCAN</h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', maxWidth: '400px' }}>AI analysis is probabilistic. Powered by Stellar Network.</p>
+            <h2 style={{ fontWeight: '950', fontSize: '20px', color: 'white', marginBottom: '8px' }}>AUTHENTISCAN</h2>
+            <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', maxWidth: '400px' }}>Content-Based Identity. Immutable Proof. AI analysis is probabilistic.</p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ color: 'white', fontSize: '14px', fontWeight: '800' }}>POWERED BY STELLAR</p>
-            <p style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>&copy; 2026 AuthentiScan Lab</p>
+            <p style={{ color: 'white', fontSize: '13px', fontWeight: '800', letterSpacing: '1px' }}>STELLAR-ANCHORED TRUTH</p>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: '11px', marginTop: '4px' }}>&copy; 2026 AuthentiScan Lab</p>
           </div>
         </div>
       </footer>
