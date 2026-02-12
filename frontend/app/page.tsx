@@ -7,6 +7,7 @@ import SubmitVerification from '@/components/SubmitVerification';
 import VerificationQuery from '@/components/VerificationQuery';
 import VerificationHistory from '@/components/VerificationHistory';
 import { useWallet } from '@/lib/useWallet';
+import { getVerification, VerificationRecord } from '@/lib/soroban';
 
 interface HistoryItem {
   id: string;
@@ -26,6 +27,8 @@ export default function Home() {
 
   // Workflow State: 0=Upload, 1=Analysis, 2=Anchor, 3=Audit
   const [currentStep, setCurrentStep] = useState(0);
+  const [existingRecord, setExistingRecord] = useState<VerificationRecord | null>(null);
+  const [isCheckingBlockchain, setIsCheckingBlockchain] = useState(false);
 
   // Navbar Hide/Show Logic
   const [showNavbar, setShowNavbar] = useState(true);
@@ -66,7 +69,29 @@ export default function Home() {
     setAnalysisResult(null);
     setCurrentStep(0);
     setLastRecordId(null);
+    setExistingRecord(null);
   };
+
+  // AUTO-CHECK: When hash is computed, immediately check blockchain
+  useEffect(() => {
+    if (!videoHash || !address) return;
+    setIsCheckingBlockchain(true);
+    getVerification(videoHash, address)
+      .then(record => {
+        if (record) {
+          console.log('[AutoCheck] ✅ Existing record found!', record);
+          setExistingRecord(record);
+        } else {
+          console.log('[AutoCheck] No existing record for this hash');
+          setExistingRecord(null);
+        }
+      })
+      .catch(err => {
+        console.warn('[AutoCheck] Check failed:', err);
+        setExistingRecord(null);
+      })
+      .finally(() => setIsCheckingBlockchain(false));
+  }, [videoHash, address]);
 
   useEffect(() => {
     if (analysisResult && videoHash) {
@@ -180,9 +205,25 @@ export default function Home() {
       <div id="scanner" className="animate-premium" style={{ maxWidth: '1200px', margin: '0 auto 120px', padding: '0 60px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '60px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            <VideoUpload onHashed={(h) => { setVideoHash(h); setCurrentStep(1); }} onAnalyzed={(r) => setAnalysisResult(r)} isConnected={!!address} />
-            {analysisResult && videoHash && <AnalysisResult analysis={analysisResult} videoHash={videoHash} />}
-            {analysisResult && videoHash && <SubmitVerification analysis={analysisResult} videoHash={videoHash} walletAddress={address} signTransaction={sign} onSubmitted={handleVerificationSubmitted} />}
+            <VideoUpload onHashed={(h) => { setVideoHash(h); setCurrentStep(1); setExistingRecord(null); }} onAnalyzed={(r) => setAnalysisResult(r)} isConnected={!!address} />
+
+            {/* BLOCKCHAIN AUTO-CHECK: Show existing record if found */}
+            {isCheckingBlockchain && videoHash && (
+              <div className="glass-card" style={{ padding: '24px', textAlign: 'center', border: '1px solid rgba(255,106,0,0.2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                  <div className="loading-spinner" />
+                  <span style={{ fontSize: '12px', fontWeight: '900', letterSpacing: '2px', color: 'var(--brand-orange)' }}>CHECKING_BLOCKCHAIN...</span>
+                </div>
+              </div>
+            )}
+
+            {existingRecord && videoHash && (
+              <ExistingRecordCard record={existingRecord} videoHash={videoHash} onContinueAnyway={() => setExistingRecord(null)} />
+            )}
+
+            {/* Normal flow: only show if NO existing record */}
+            {!existingRecord && analysisResult && videoHash && <AnalysisResult analysis={analysisResult} videoHash={videoHash} />}
+            {!existingRecord && analysisResult && videoHash && <SubmitVerification analysis={analysisResult} videoHash={videoHash} walletAddress={address} signTransaction={sign} onSubmitted={handleVerificationSubmitted} />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {address && (
@@ -298,5 +339,108 @@ function ModalItem({ text }: { text: string }) {
 function FooterLink({ text }: { text: string }) {
   return (
     <a href="#" style={{ color: 'var(--text-tertiary)', textDecoration: 'none', fontSize: '12px', fontWeight: '700' }}>{text}</a>
+  );
+}
+
+function ExistingRecordCard({ record, videoHash, onContinueAnyway }: { record: any; videoHash: string; onContinueAnyway: () => void }) {
+  const date = record.timestamp ? new Date(record.timestamp * 1000) : null;
+  const verdict = record.is_ai_generated ? 'AI_GENERATED' : 'AUTHENTIC';
+  const verdictColor = record.is_ai_generated ? '#ff4444' : 'var(--success)';
+
+  return (
+    <div className="glass-card animate-premium" style={{
+      padding: '0',
+      overflow: 'hidden',
+      border: `1px solid ${record.is_ai_generated ? 'rgba(255,68,68,0.3)' : 'rgba(0,255,136,0.3)'}`,
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '20px 24px',
+        background: record.is_ai_generated
+          ? 'linear-gradient(135deg, rgba(255,68,68,0.1) 0%, rgba(11,15,20,1) 100%)'
+          : 'linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(11,15,20,1) 100%)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '40px', height: '40px', borderRadius: '50%',
+            background: `${verdictColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: `2px solid ${verdictColor}`,
+          }}>
+            <span style={{ fontSize: '18px' }}>🔍</span>
+          </div>
+          <div>
+            <p style={{ fontSize: '14px', fontWeight: '950', letterSpacing: '2px', color: verdictColor, margin: 0 }}>
+              EXISTING_RECORD_FOUND
+            </p>
+            <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', margin: 0 }}>
+              This video was previously verified on the Stellar blockchain
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Details */}
+      <div style={{ padding: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>VERDICT</p>
+            <p style={{ fontSize: '16px', fontWeight: '950', color: verdictColor, margin: 0 }}>{verdict}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>CONFIDENCE</p>
+            <p style={{ fontSize: '16px', fontWeight: '950', color: 'white', margin: 0 }}>{record.confidence_score}%</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>RECORD_ID</p>
+            <p style={{ fontSize: '16px', fontWeight: '950', color: 'var(--brand-orange)', margin: 0 }}>#{record.record_id}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>VERIFIED_DATE</p>
+            <p style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>
+              {date ? date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+            </p>
+          </div>
+        </div>
+
+        {/* Hash */}
+        <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', marginBottom: '16px' }}>
+          <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>MATCHING_HASH</p>
+          <p style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', margin: 0, wordBreak: 'break-all' }}>
+            {videoHash}
+          </p>
+        </div>
+
+        {/* Submitter */}
+        <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', marginBottom: '20px' }}>
+          <p style={{ fontSize: '9px', fontWeight: '900', color: 'var(--text-tertiary)', letterSpacing: '1px', margin: '0 0 4px 0' }}>ORIGINAL_SUBMITTER</p>
+          <p style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', margin: 0 }}>
+            {record.submitter || 'Unknown'}
+          </p>
+        </div>
+
+        {/* Info */}
+        <div style={{ padding: '12px', background: 'rgba(0,255,136,0.03)', borderRadius: '8px', border: '1px solid rgba(0,255,136,0.08)', marginBottom: '16px' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.6' }}>
+            ✅ <strong>Blockchain Verified:</strong> This video&apos;s cryptographic fingerprint matches an existing on-chain record.
+            The verification is immutable and independently auditable.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={onContinueAnyway}
+            style={{
+              flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '800',
+              letterSpacing: '1px', cursor: 'pointer', transition: '0.3s',
+            }}
+          >
+            CONTINUE_NEW_ANALYSIS →
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
