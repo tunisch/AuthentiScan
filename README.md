@@ -1,290 +1,345 @@
-# 🛡️ AuthentiScan: Trust Infrastructure for the AI Age
+# AuthentiScan — Video Truth Infrastructure on Stellar
 
-[![Stellar](https://img.shields.io/badge/Blockchain-Stellar-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![Stellar](https://img.shields.io/badge/Blockchain-Stellar_Testnet-black?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-AuthentiScan is an industrial-grade **"Truth Anchor"** platform that converges **Advanced AI Diagnostics** with **Stellar Blockchain Immutability** to verify and secure video authenticity.
+AuthentiScan anchors AI-based video authenticity analysis results to the Stellar blockchain. The system produces **immutable, independently verifiable proof** that a specific video was analyzed at a specific time, with a specific result.
+
+This is not a link verifier. This is a **content identity system**.
 
 ---
 
-## 📺 System Preview
+## Core Architectural Decision
 
-<img src= https://github.com/user-attachments/assets/d4d6b1e5-66d0-4fdc-8ce4-cfd96df4c91f width="100%" alt="AuthentiScan Hero Preview" />
+> The project adopts a single unified identity model: **Content-Based Identity**.
+> All videos, whether submitted as local files or remote URLs, are resolved into a canonical byte representation and hashed using SHA-256.
+> URL string hashing is deprecated and no longer used as an identity mechanism.
 
-*The AuthentiScan Dashboard: Real-time telemetry meets cryptographic reliability.*
-
----
-
-## 💎 Core Pillars
-
-- **🛡️ AI Forensic Diagnostics:** Multi-modal analysis covering spatial anomalies, temporal stability, and spectral audio consistency.
-- **🔗 Cryptographic Anchoring:** Every verification record generates a unique SHA-256 fingerprint anchored to the Stellar Testnet.
-- **⏳ Immutable Audit Trail:** Once a record is broadcasting to the ledger, it becomes a permanent, tamper-proof record of truth.
-- **👁️ Transparency First:** Integrated explorer telemetry allows anyone to verify the provenance of a video independently.
+**Identity = SHA-256(canonical video bytes)**
+**URL = metadata reference only**
 
 ---
 
-## 🛠️ How it Works (Interactive Flow)
+## System Architecture
 
 ```mermaid
 graph TD
-    A[Video Selection] --> B[Client-Side Hashing]
-    B --> C[Neural Engine Analysis]
-    C --> D[Diagnostic Metadata Generation]
-    D --> E[Stellar Ledger Anchor]
-    E --> F[Immutable Audit Log]
-    F --> G[Public Verification Proof]
+    subgraph "Client Layer"
+        U[User]
+        LF[Local File Upload]
+        RU[Remote URL Input]
+    end
+
+    subgraph "Canonicalization Pipeline"
+        DL[Deterministic Download<br/>yt-dlp version-locked]
+        CH[SHA-256 Content Hash<br/>SubtleCrypto API]
+    end
+
+    subgraph "Analysis Engine"
+        AI[AI Diagnostics Module<br/>Forensic Telemetry]
+    end
+
+    subgraph "Blockchain Layer"
+        FW[Freighter Wallet<br/>Transaction Signing]
+        SC[Soroban Smart Contract<br/>Immutable Storage]
+        SL[Stellar Testnet Ledger<br/>Permanent Record]
+    end
+
+    U --> LF
+    U --> RU
+    LF --> CH
+    RU --> DL
+    DL --> CH
+    CH --> AI
+    AI --> FW
+    FW --> SC
+    SC --> SL
+
+    style SC fill:#ff6a00,stroke:#fff,stroke-width:2px
+    style SL fill:#10b981,stroke:#fff,stroke-width:2px
+    style CH fill:#3b82f6,stroke:#fff,stroke-width:2px
 ```
 
-### 1. Verification Journey
-1.  **Ingestion:** Select a video (locally or via URL). The system performs client-side ingestion with no raw media transmission. The file remains entirely within your browser environment.
-2.  **Diagnostics:** AI models scan for pixel jitters and spectral deviations.
-3.  **Anchoring:** Sign a transaction via **Freighter Wallet** to store results on-chain.
-4.  **Audit:** Retrieve clinical-grade proof from the Stellar Network at any time using the video hash.
+### Data Flow
+
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | Frontend | User provides video (local file or URL) |
+| 2 | Pipeline | Local file: read bytes directly. URL: download via deterministic pipeline |
+| 3 | Hashing | SHA-256 computed over canonical video bytes |
+| 4 | Analysis | AI forensic engine evaluates authenticity |
+| 5 | Signing | User signs transaction via Freighter Wallet |
+| 6 | Anchoring | Smart contract stores `content_hash + analysis_result + metadata` |
+| 7 | Verification | Anyone can re-hash the same bytes and query the contract |
 
 ---
 
-## 🏛️ Monorepo Architecture
+## Content Identity Model
 
-AuthentiScan is organized as a unified monorepo to ensure tight integration between the forensic engine and the blockchain layer.
+### Why Content Hash, Not URL
 
-```mermaid
-graph LR
-    subgraph "Root"
-        R[README]
-        L[LICENSE]
-    end
-    subgraph "Frontend (Next.js 14)"
-        FA[App Router]
-        FC[UI Components]
-        FL[Stellar SDK Integration]
-    end
-    subgraph "Contract (Soroban)"
-        RS[Rust Source]
-        RW[WASM Binary]
-        RT[Unit Tests]
-    end
-    FA --> FL
-    FL <--> RS
+| Property | URL | Content Hash (SHA-256) |
+|----------|-----|----------------------|
+| Uniquely identifies content? | ❌ No. Same video, different URLs | ✅ Yes. Same bytes = same hash |
+| Deterministic? | N/A | ✅ Cryptographically deterministic |
+| Tamper-evident? | ❌ URL can point to modified content | ✅ Single bit change = completely different hash |
+| Platform-independent? | ❌ Platform-specific | ✅ Universal |
+| Collision resistance | N/A | ✅ 2^256 address space |
+
+**URL is a pointer. Hash is identity.**
+
+A URL tells you *where* something is.
+A SHA-256 hash tells you *what* something is.
+
+AuthentiScan stores *what* the content is, not *where* it was found.
+
+### Re-Verification Flow
+
 ```
+Original submission:
+  Video bytes → SHA-256 → "abc123..." → anchored to Stellar
+
+Later verification:
+  Same video bytes → SHA-256 → "abc123..." → matches on-chain record ✅
+  Modified video → SHA-256 → "xyz789..." → no match ❌
+```
+
+Any user with the same video file can independently verify its on-chain record. No trust in the original submitter is required. The hash is the proof.
+
 ---
 
-## 🌐 System Boundary Diagram
+## Deterministic Download Pipeline
 
-The system boundary illustrates the trust perimeter. Authentiscan acts as a thin, non-custodial gateway between the user's private media and the public ledger.
+Remote URLs are downloaded using a deterministic, version-locked pipeline to ensure byte-identical outputs for the same video ID and format.
+
+### Pipeline Specification
+
+```
+Tool:       yt-dlp (version-locked)
+Format:     best[ext=mp4] (explicit format selection)
+Flags:      --no-cache-dir --no-part
+Output:     Single canonical MP4 file
+Hash:       SHA-256 over complete file bytes
+```
+
+### Determinism Verification
+
+Controlled experiment performed on `2026-02-12`:
+
+| Parameter | Download 1 | Download 2 |
+|-----------|-----------|-----------|
+| Video ID | `1Eo_ojxFde0` | `1Eo_ojxFde0` |
+| Format | `best[ext=mp4]` | `best[ext=mp4]` |
+| Size | 415,919 bytes | 415,919 bytes |
+| SHA-256 | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
+| **Match** | ✅ **Identical** | ✅ **Identical** |
+
+Same video ID + same format + same tool version = byte-identical output = identical hash.
+
+---
+
+## Smart Contract
+
+**Network:** Stellar Testnet
+**Language:** Soroban (Rust → WASM)
+**Storage:** Persistent (TTL-managed)
+
+### On-Chain Record Structure
+
+```rust
+struct VerificationRecord {
+    record_id: u32,
+    video_hash: BytesN<32>,     // SHA-256 content hash (identity)
+    submitter: Address,          // Wallet that anchored the record
+    is_ai_generated: bool,       // AI analysis verdict
+    confidence_score: u32,       // Analysis confidence (0-100)
+    timestamp: u64,              // Block timestamp at submission
+}
+```
+
+### Contract Functions
+
+| Function | Parameters | Description |
+|----------|-----------|-------------|
+| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor analysis result to ledger |
+| `get_verification` | `video_hash, submitter` | Query existing record by content hash |
+| `get_verification_count` | — | Total number of anchored records |
+
+### Guarantees
+
+- **Write-once semantics:** No `update` or `delete` functions exist
+- **Duplicate prevention:** Re-submitting the same hash returns existing `record_id`
+- **Cryptographic authorization:** Every submission requires wallet signature (`require_auth`)
+- **Immutability:** Records cannot be modified after anchoring
+
+---
+
+## Security Model
+
+### Trust Architecture
 
 ```mermaid
 graph TD
-    subgraph "Trust Boundary (User Environment)"
+    subgraph "Untrusted Zone"
         U[End User]
-        F[Video File]
-        C[Authentiscan Client]
-        H[SHA-256 Hash]
+        B[Browser / Client]
     end
-    
-    subgraph "External Periphery"
-        W[Freighter Wallet]
-        R[Soroban RPC]
+
+    subgraph "Trusted Periphery"
+        W[Freighter Wallet<br/>Signature Authority]
+        RPC[Soroban RPC<br/>Network Gateway]
     end
 
     subgraph "Immutable Core"
-        S[Smart Contract]
-        L[Stellar Ledger]
+        SC[Smart Contract<br/>Write-Once Logic]
+        L[Stellar Ledger<br/>Permanent State]
     end
 
-    U --> F
-    F --> C
-    C --> H
-    H --> W
-    W --> R
-    R --> S
-    S --> L
+    U --> B
+    B -->|content_hash + result| W
+    W -->|signed transaction| RPC
+    RPC --> SC
+    SC -->|permanent write| L
+
+    style SC fill:#ff6a00,stroke:#fff,stroke-width:3px
+    style L fill:#10b981,stroke:#fff,stroke-width:3px
+```
+
+### Security Properties
+
+| Property | Mechanism | Status |
+|----------|----------|--------|
+| **Content integrity** | SHA-256 avalanche effect | ✅ Guaranteed |
+| **Record immutability** | Stellar consensus + write-once contract | ✅ Guaranteed |
+| **Submission authorization** | Freighter wallet signature | ✅ Enforced |
+| **Duplicate prevention** | Hash-based storage keys | ✅ Enforced |
+| **Privacy** | No raw video stored on-chain | ✅ By design |
+| **Re-verification** | Hash same bytes → query contract | ✅ Deterministic |
+
+### What This System Does NOT Do
+
+- Does not store video content on-chain (only hashes and metadata)
+- Does not guarantee AI analysis accuracy (probabilistic, not deterministic)
+- Does not prevent the same video from being submitted with different byte encodings
+- Does not provide legal proof (provides cryptographic evidence)
+
+---
+
+## Known Limitations
+
+| Limitation | Explanation | Impact |
+|------------|------------|--------|
+| **Platform re-encoding** | If a platform changes video encoding, the same visual content produces a different hash | Different hash = different identity. This is correct behavior, not a bug |
+| **AI is probabilistic** | Analysis confidence scores are estimates, not ground truth | Acknowledged. The blockchain anchors the *result*, not *absolute truth* |
+| **Testnet deployment** | Current contract is on Stellar Testnet | Mainnet migration requires key rotation and security audit |
+| **Format sensitivity** | Different download formats (720p vs 1080p) produce different hashes | By design. Each format is a different byte sequence |
+| **No semantic matching** | System verifies exact content bytes, not visual similarity | Content-based, not perception-based identity |
+
+---
+
+## Forensic Engine
+
+The AI diagnostic layer is currently implemented as a **Forensic Telemetry Engine (Demo Edition)**.
+
+- **Probabilistic scoring** based on spatial and temporal analysis
+- **Confidence score** represents model certainty at time of ingestion
+- **Production path:** Integration with multi-modal deepfake detectors (Vision Transformers, Audio-Spectral Analysis) via decentralized oracles
+
+> [!IMPORTANT]
+> AI analysis is **probabilistic** and does not constitute definitive legal proof.
+> The blockchain anchors the analysis result as immutable evidence.
+> Humans remain the final auditors.
+
+---
+
+## Developer Quick-Start
+
+### Prerequisites
+
+- **Node.js** (v18+) & **npm**
+- **Rust Toolchain** (with `wasm32-unknown-unknown` target)
+- **Stellar CLI** ([Install Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup))
+- **Freighter Wallet Extension**
+- **yt-dlp** (for URL video download pipeline)
+- **Python 3.x** (yt-dlp dependency)
+
+### Smart Contract Deployment
+
+```bash
+cd contract
+stellar contract build
+
+stellar network add testnet \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015"
+
+stellar keys generate deployer --network testnet --fund
+
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
+  --source deployer \
+  --network testnet
+```
+
+Save the returned **Contract ID** for frontend configuration.
+
+### Frontend Launch
+
+```bash
+cd frontend
+
+# Configure environment
+cat > .env.local << EOF
+NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID
+NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
+EOF
+
+npm install
+npm run dev
 ```
 
 ---
 
-## 🔒 Security & Trust Model
+## Monorepo Structure
 
-### 1. Client-Side Cryptography
-AuthentiScan prioritizes user privacy and data integrity.
-- **Privacy:** Video files never leave the client's machine. Only the calculated **SHA-256 fingerprint** is transmitted to the blockchain.
-- **Integrity:** Hashing is performed using the browser's native `SubtleCrypto` API, ensuring resistance against tampering during ingestion.
-
-### 2. On-Chain Immutability
-- **Hardened Logic:** Once a verification is anchored to the Stellar ledger, it becomes economically and cryptographically immutable under Stellar consensus assumptions.
-- **Authorization:** Every transaction requires a cryptographic signature from a verified auditor using the **Freighter Wallet**. Unauthorized submissions are rejected at the protocol level (`require_auth`).
-
-### 3. Global Unique Protection
-- **One Truth:** The smart contract enforces global uniqueness. A specific video hash can only be verified once, preventing conflicting diagnostic reports for the same content.
+```
+block_chain_project/
+├── contract/               # Soroban smart contract (Rust)
+│   ├── src/lib.rs          # Contract logic
+│   ├── Cargo.toml          # Rust dependencies
+│   └── target/             # Compiled WASM binary
+├── frontend/               # Next.js 14 application
+│   ├── app/                # App Router pages
+│   ├── components/         # UI components
+│   ├── lib/                # Core logic
+│   │   ├── hash.ts         # Local file SHA-256 hashing
+│   │   ├── urlHash.ts      # URL canonicalization
+│   │   ├── soroban.ts      # Stellar contract interaction
+│   │   ├── mockAi.ts       # AI forensic engine
+│   │   └── useWallet.ts    # Freighter wallet hook
+│   └── .env.local          # Contract ID + RPC URL
+└── README.md               # This document
+```
 
 ---
 
----
-
-## 🛡️ Threat Model & Security Disclosures
-
-AuthentiScan operates under a strictly defined security model designed for transparency and risk awareness.
-
-### 🔐 Security Guarantees
-
-#### 1. Client-Side Hashing Only
-- **Privacy:** Video files **never leave the client's browser**. Only the SHA-256 fingerprint is transmitted.
-- **Integrity:** Hashing uses the browser's native `SubtleCrypto` API, resistant to tampering.
-- **No On-Chain Storage:** The blockchain stores only cryptographic hashes and metadata—never raw video data.
-
-#### 2. Blockchain Immutability
-- **Economically** and cryptographically immutable under Stellar consensus assumptions.
-- **No Update/Delete:** The smart contract enforces write-once semantics. No `update_verification` function exists.
-- **Cryptographic Authorization:** Every transaction requires a signature from the submitter's wallet (`require_auth`).
-- **Upgrade Policy:** The current deployment does not implement upgradeability. Any future protocol or contract upgrade would require explicit redeployment and controlled state migration.
-
-
-#### 3. Global Duplicate Prevention
-- **One Hash, One Truth:** The smart contract enforces global uniqueness at the storage layer.
-- **Idempotent Behavior:** Re-submitting the same video hash returns the existing `record_id` without creating duplicates.
-- **No State Overwrite:** Storage keys use `DataKey::Verification(video_hash)` to prevent collision.
-
-### ⚠️ Known Limitations & Risks
-
-| Risk Factor | Mitigation | Residual Risk |
-|-------------|-----------|---------------|
-| **Hash Collisions** | SHA-256 provides a 2^256 address space. Collision probability is considered computationally infeasible with current cryptographic knowledge. | 🟢NEGLIGIBLE |
-| **Probabilistic AI** | AI diagnostics are **probabilistic estimates**, not definitive legal proof | 🟡 ACKNOWLEDGED |
-| **Frontend Tampering** | Client UI can be modified, but **on-chain records are authoritative** and cryptographically signed | 🟡 MITIGATED |
-| **Data Privacy** | No video data stored on-chain; only hashes and metadata | 🟢 PROTECTED |
-| **Testnet Keys** | **CRITICAL:** Testnet keys must be rotated before mainnet deployment | 🔴 REQUIRES ACTION |
-| **Rate Limiting** | Current demo lacks anti-spam mechanisms | 🟡 FUTURE WORK |
-
-### 🔑 Key Rotation Requirements
+## Key Rotation Policy
 
 > [!WARNING]
 > **Testnet → Mainnet Migration:**
 > - **NEVER** reuse testnet Stellar keys on mainnet
 > - Generate fresh keys using `stellar keys generate --network mainnet`
-> - Store mainnet keys in secure vaults (e.g., AWS Secrets Manager, HashiCorp Vault)
-> - **NEVER** commit mainnet keys to Git
-
-### 🚀 Production Roadmap
-
-Future production iterations will include:
-- **Multi-Signature Consensus:** Require multiple auditor signatures for high-stakes verifications
-- **Rate Limiting:** Prevent spam and Sybil attacks at the RPC layer
-- **Anti-Spam Mechanisms:** Fee-based submission or proof-of-work challenges
-- **Decentralized Oracles:** Integrate multi-modal AI models via Chainlink or similar
-- **Formal Security Audit:** Mainnet deployment will require independent smart contract audit and security review.
-
-
-### 🎯 Trust Boundaries
-
-```mermaid
-graph TD
-    subgraph "🔓 Untrusted Zone"
-        U[End User]
-        B[Browser]
-        UI[AuthentiScan UI]
-    end
-    
-    subgraph "🔐 Trusted Periphery"
-        W[Freighter Wallet]
-        RPC[Soroban RPC]
-    end
-    
-    subgraph "⚡ Immutable Core"
-        SC[Smart Contract<br/>Duplicate Guard<br/>Immutable State]
-        L[Stellar Ledger<br/>Permanent Record]
-    end
-    
-    U --> B
-    B --> UI
-    UI -->|SHA-256 Hash| W
-    W -->|Signed TX| RPC
-    RPC --> SC
-    SC -->|Write-Once| L
-    
-    style SC fill:#ff6a00,stroke:#fff,stroke-width:3px
-    style L fill:#10b981,stroke:#fff,stroke-width:3px
-```
-
-**Key Insight:** Only the **Immutable Core** (Smart Contract + Ledger) provides cryptographic guarantees. The client UI is a convenience layer—**always verify on-chain**.
+> - Store mainnet keys in secure vaults (AWS Secrets Manager, HashiCorp Vault)
+> - **NEVER** commit mainnet keys to version control
 
 ---
 
-## 🗺️ System Interaction Flow
+## Developed by
 
-The following lifecycle diagram illustrates how AuthentiScan bridges the gap between local forensic analysis and decentralized consensus.
-
-```mermaid
-graph LR
-    C[Client UI] <--> W[Freighter Wallet]
-    W <--> R[Soroban RPC]
-    R <--> SC[Smart Contract]
-    SC <--> L[Stellar Ledger]
-    
-    style SC fill:#ff6a00,stroke:#fff,stroke-width:2px
-    style L fill:#10b981,stroke:#fff,stroke-width:2px
-```
-
----
-
-## 🚀 Developer Quick-Start
-
-### 1. Prerequisites
-- **Node.js** (v18+) & **npm**
-- **Rust Toolchain** (with `wasm32-unknown-unknown` target)
-- **Stellar CLI** ([Install Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup))
-- **Freighter Wallet Extension**
-
-### 2. Smart Contract Setup
-```bash
-# 1. Build the WASM binary
-cd contract
-stellar contract build
-
-# 2. Configure network
-stellar network add testnet \
-  --rpc-url https://soroban-testnet.stellar.org:443 \
-  --network-passphrase "Test SDF Network ; September 2015"
-## 🔬 Forensic Engine (AI Layer)
-
-The current AI diagnostic layer is implemented as a **Forensic Telemetry Engine (Demo Edition)**.
-- **Probabilistic Scoring:** Decisions are made based on spectral and spatial probability distributions.
-- **Verification Metadata:** The confidence score represents the model's certainty at the time of ingestion.
-- **Production Note:** A production-ready environment would integrate multi-modal deepfake detectors (Vision Transformers, Audio-Spectral Analysis) via decentralized oracles.
-
----
-
-# 3. Deploy
-stellar keys generate deployer --network testnet --fund
-stellar contract deploy --wasm target/wasm32-unknown-unknown/release/video_verification.wasm --source deployer --network testnet
-```
-*Note: Save the returned **Contract ID** for the frontend setup.*
-
-### 3. Frontend Launch
-1.  **Config:** Create `frontend/.env.local`
-    ```env
-    NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID
-    NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
-    ```
-2.  **Run:**
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
-
----
-
-## ⚖️ Forensic Accuracy Notice
-
-> [!IMPORTANT]
-> AI analysis is **probabilistic** and does not constitute definitive legal proof of authenticity. Final judgment should be supported by multi-modal forensic evidence. This platform provides the **Infrastructure of Trust**, but humans remain the final auditors.
-
----
-
-## 👨‍💻 Developed by
 **Lead Researcher:** [Tunahan Türker Ertürk](https://www.linkedin.com/in/tunahanturkererturk/)
 
 ---
-© 2026 AuthentiScan Lab. Secure. Immutable. Verifiable.
+
+© 2026 AuthentiScan Lab. Content-Based Identity. Immutable Proof. Stellar-Anchored Trust.
