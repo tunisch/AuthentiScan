@@ -361,8 +361,8 @@ export async function getLatestEvents() {
 
     try {
         const latestLedgerResponse = await server.getLatestLedger();
-        // Look back ~2000 ledgers (~3 hours) to find recent activity
-        const startLedger = Math.max(0, latestLedgerResponse.sequence - 2000);
+        // Look back ~17280 ledgers (~24 hours) to cover full Stellar event retention
+        const startLedger = Math.max(0, latestLedgerResponse.sequence - 17280);
 
         console.log('[getLatestEvents] Fetching events...');
         console.log('[getLatestEvents] Latest ledger:', latestLedgerResponse.sequence);
