@@ -5,341 +5,167 @@
 [![Soroban](https://img.shields.io/badge/Contract-Soroban-black?style=for-the-badge&logo=rust&logoColor=white)](https://soroban.stellar.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-AuthentiScan anchors AI-based video authenticity analysis results to the Stellar blockchain. The system produces **immutable, independently verifiable proof** that a specific video was analyzed at a specific time, with a specific result.
+AuthentiScan is a full-stack Stellar dApp that anchors AI-based video authenticity analysis results to the blockchain. Users upload a video (or provide a URL), the system computes a SHA-256 content hash, runs AI forensic analysis, and writes the result immutably to a Soroban smart contract on Stellar Testnet. Anyone with the same video file can independently verify the on-chain record.
 
-This is not a link verifier. This is a **content identity system**.
+> **Tech Stack:** Next.js 14 · Soroban/Rust · Stellar Testnet · Freighter Wallet · SHA-256 · yt-dlp
+
+---
+
+## Features
+
+- 🔐 **Content-Based Identity** — Video identity = SHA-256 hash of bytes, not URLs
+- 🤖 **AI Forensic Analysis** — Probabilistic deepfake detection with confidence scoring
+- ⛓️ **Stellar Blockchain Anchoring** — Write-once, immutable on-chain records
+- 🔍 **Auto-Verification** — Automatic blockchain lookup when a hash is computed
+- 📜 **Verification History** — Local audit trail with Stellar Explorer links
+- 🔒 **Wallet-Signed Submissions** — Every record requires Freighter wallet authorization
+- 📎 **Dual Input** — Local file upload or remote URL with deterministic download
+- ⚡ **Re-Verification** — Same bytes → same hash → same on-chain proof
 
 ---
 
 ## Core Architectural Decision
 
-> The project adopts a single unified identity model: **Content-Based Identity**.
-> All videos, whether submitted as local files or remote URLs, are resolved into a canonical byte representation and hashed using SHA-256.
-> URL string hashing is deprecated and no longer used as an identity mechanism.
-
-**Identity = SHA-256(canonical video bytes)**
-**URL = metadata reference only**
+The project uses **Content-Based Identity**: all videos are resolved into canonical bytes and hashed with SHA-256. The hash is the identity. URLs are metadata references only. See [docs/experiments.md](docs/experiments.md) for determinism verification data.
 
 ---
 
-## System Architecture
+## Architecture
 
 ```mermaid
 graph TD
-    subgraph "Client Layer"
-        U[User]
-        LF[Local File Upload]
-        RU[Remote URL Input]
+    subgraph "Client"
+        LF[Local File]
+        RU[Remote URL]
     end
 
-    subgraph "Canonicalization Pipeline"
-        DL[Deterministic Download<br/>yt-dlp version-locked]
-        CH[SHA-256 Content Hash<br/>SubtleCrypto API]
+    subgraph "Pipeline"
+        DL[yt-dlp Download]
+        CH[SHA-256 Hash]
+        AI[AI Analysis]
     end
 
-    subgraph "Analysis Engine"
-        AI[AI Diagnostics Module<br/>Forensic Telemetry]
+    subgraph "Blockchain"
+        FW[Freighter Wallet]
+        SC[Soroban Contract]
+        SL[Stellar Ledger]
     end
 
-    subgraph "Blockchain Layer"
-        FW[Freighter Wallet<br/>Transaction Signing]
-        SC[Soroban Smart Contract<br/>Immutable Storage]
-        SL[Stellar Testnet Ledger<br/>Permanent Record]
-    end
-
-    U --> LF
-    U --> RU
     LF --> CH
-    RU --> DL
-    DL --> CH
-    CH --> AI
-    AI --> FW
-    FW --> SC
-    SC --> SL
+    RU --> DL --> CH
+    CH --> AI --> FW --> SC --> SL
 
     style SC fill:#ff6a00,stroke:#fff,stroke-width:2px
     style SL fill:#10b981,stroke:#fff,stroke-width:2px
     style CH fill:#3b82f6,stroke:#fff,stroke-width:2px
 ```
 
-### Data Flow
-
-| Step | Component | Action |
-|------|-----------|--------|
-| 1 | Frontend | User provides video (local file or URL) |
-| 2 | Pipeline | Local file: read bytes directly. URL: download via deterministic pipeline |
-| 3 | Hashing | SHA-256 computed over canonical video bytes |
-| 4 | Analysis | AI forensic engine evaluates authenticity |
-| 5 | Signing | User signs transaction via Freighter Wallet |
-| 6 | Anchoring | Smart contract stores `content_hash + analysis_result + metadata` |
-| 7 | Verification | Anyone can re-hash the same bytes and query the contract |
-
----
-
-## Content Identity Model
-
-### Why Content Hash, Not URL
-
-| Property | URL | Content Hash (SHA-256) |
-|----------|-----|----------------------|
-| Uniquely identifies content? | ❌ No. Same video, different URLs | ✅ Yes. Same bytes = same hash |
-| Deterministic? | N/A | ✅ Cryptographically deterministic |
-| Tamper-evident? | ❌ URL can point to modified content | ✅ Single bit change = completely different hash |
-| Platform-independent? | ❌ Platform-specific | ✅ Universal |
-| Collision resistance | N/A | ✅ 2^256 address space |
-
-**URL is a pointer. Hash is identity.**
-
-A URL tells you *where* something is.
-A SHA-256 hash tells you *what* something is.
-
-AuthentiScan stores *what* the content is, not *where* it was found.
-
-### Re-Verification Flow
-
-```
-Original submission:
-  Video bytes → SHA-256 → "abc123..." → anchored to Stellar
-
-Later verification:
-  Same video bytes → SHA-256 → "abc123..." → matches on-chain record ✅
-  Modified video → SHA-256 → "xyz789..." → no match ❌
-```
-
-Any user with the same video file can independently verify its on-chain record. No trust in the original submitter is required. The hash is the proof.
-
----
-
-## Deterministic Download Pipeline
-
-Remote URLs are downloaded using a deterministic, version-locked pipeline to ensure byte-identical outputs for the same video ID and format.
-
-### Pipeline Specification
-
-```
-Tool:       yt-dlp (version-locked)
-Format:     best[ext=mp4] (explicit format selection)
-Flags:      --no-cache-dir --no-part
-Output:     Single canonical MP4 file
-Hash:       SHA-256 over complete file bytes
-```
-
-### Determinism Verification
-
-Controlled experiment performed on `2026-02-12`:
-
-| Parameter | Download 1 | Download 2 |
-|-----------|-----------|-----------|
-| Video ID | `1Eo_ojxFde0` | `1Eo_ojxFde0` |
-| Format | `best[ext=mp4]` | `best[ext=mp4]` |
-| Size | 415,919 bytes | 415,919 bytes |
-| SHA-256 | `FF655EC5...BC1081` | `FF655EC5...BC1081` |
-| **Match** | ✅ **Identical** | ✅ **Identical** |
-
-Same video ID + same format + same tool version = byte-identical output = identical hash.
+| Step | What Happens |
+|------|-------------|
+| 1 | User provides video (file or URL) |
+| 2 | SHA-256 content hash computed |
+| 3 | AI forensic engine evaluates authenticity |
+| 4 | User signs transaction via Freighter |
+| 5 | Smart contract stores hash + result immutably |
+| 6 | Anyone can re-hash same bytes to verify |
 
 ---
 
 ## Smart Contract
 
-**Network:** Stellar Testnet
-**Language:** Soroban (Rust → WASM)
-**Storage:** Persistent (TTL-managed)
+| Function | Description |
+|----------|-------------|
+| `submit_verification` | Anchor analysis result to ledger |
+| `get_verification` | Query record by content hash |
+| `get_verification_count` | Total anchored records |
 
-### On-Chain Record Structure
+**Guarantees:** Write-once (no update/delete) · Duplicate prevention · Wallet signature required
 
-```rust
-struct VerificationRecord {
-    record_id: u32,
-    video_hash: BytesN<32>,     // SHA-256 content hash (identity)
-    submitter: Address,          // Wallet that anchored the record
-    is_ai_generated: bool,       // AI analysis verdict
-    confidence_score: u32,       // Analysis confidence (0-100)
-    timestamp: u64,              // Block timestamp at submission
-}
-```
-
-### Contract Functions
-
-| Function | Parameters | Description |
-|----------|-----------|-------------|
-| `submit_verification` | `submitter, video_hash, is_ai_generated, confidence_score` | Anchor analysis result to ledger |
-| `get_verification` | `video_hash, submitter` | Query existing record by content hash |
-| `get_verification_count` | — | Total number of anchored records |
-
-### Guarantees
-
-- **Write-once semantics:** No `update` or `delete` functions exist
-- **Duplicate prevention:** Re-submitting the same hash returns existing `record_id`
-- **Cryptographic authorization:** Every submission requires wallet signature (`require_auth`)
-- **Immutability:** Records cannot be modified after anchoring
+→ Full API, Rust struct, error codes, deploy scripts: [contract/README.md](contract/README.md)
 
 ---
 
-## Security Model
-
-### Trust Architecture
-
-```mermaid
-graph TD
-    subgraph "Untrusted Zone"
-        U[End User]
-        B[Browser / Client]
-    end
-
-    subgraph "Trusted Periphery"
-        W[Freighter Wallet<br/>Signature Authority]
-        RPC[Soroban RPC<br/>Network Gateway]
-    end
-
-    subgraph "Immutable Core"
-        SC[Smart Contract<br/>Write-Once Logic]
-        L[Stellar Ledger<br/>Permanent State]
-    end
-
-    U --> B
-    B -->|content_hash + result| W
-    W -->|signed transaction| RPC
-    RPC --> SC
-    SC -->|permanent write| L
-
-    style SC fill:#ff6a00,stroke:#fff,stroke-width:3px
-    style L fill:#10b981,stroke:#fff,stroke-width:3px
-```
-
-### Security Properties
-
-| Property | Mechanism | Status |
-|----------|----------|--------|
-| **Content integrity** | SHA-256 avalanche effect | ✅ Guaranteed |
-| **Record immutability** | Stellar consensus + write-once contract | ✅ Guaranteed |
-| **Submission authorization** | Freighter wallet signature | ✅ Enforced |
-| **Duplicate prevention** | Hash-based storage keys | ✅ Enforced |
-| **Privacy** | No raw video stored on-chain | ✅ By design |
-| **Re-verification** | Hash same bytes → query contract | ✅ Deterministic |
-
-### What This System Does NOT Do
-
-- Does not store video content on-chain (only hashes and metadata)
-- Does not guarantee AI analysis accuracy (probabilistic, not deterministic)
-- Does not prevent the same video from being submitted with different byte encodings
-- Does not provide legal proof (provides cryptographic evidence)
-
----
-
-## Known Limitations
-
-| Limitation | Explanation | Impact |
-|------------|------------|--------|
-| **Platform re-encoding** | If a platform changes video encoding, the same visual content produces a different hash | Different hash = different identity. This is correct behavior, not a bug |
-| **AI is probabilistic** | Analysis confidence scores are estimates, not ground truth | Acknowledged. The blockchain anchors the *result*, not *absolute truth* |
-| **Testnet deployment** | Current contract is on Stellar Testnet | Mainnet migration requires key rotation and security audit |
-| **Format sensitivity** | Different download formats (720p vs 1080p) produce different hashes | By design. Each format is a different byte sequence |
-| **No semantic matching** | System verifies exact content bytes, not visual similarity | Content-based, not perception-based identity |
-
----
-
-## Forensic Engine
-
-The AI diagnostic layer is currently implemented as a **Forensic Telemetry Engine (Demo Edition)**.
-
-- **Probabilistic scoring** based on spatial and temporal analysis
-- **Confidence score** represents model certainty at time of ingestion
-- **Production path:** Integration with multi-modal deepfake detectors (Vision Transformers, Audio-Spectral Analysis) via decentralized oracles
-
-> [!IMPORTANT]
-> AI analysis is **probabilistic** and does not constitute definitive legal proof.
-> The blockchain anchors the analysis result as immutable evidence.
-> Humans remain the final auditors.
-
----
-
-## Developer Quick-Start
+## Quick Start
 
 ### Prerequisites
 
-- **Node.js** (v18+) & **npm**
-- **Rust Toolchain** (with `wasm32-unknown-unknown` target)
-- **Stellar CLI** ([Install Guide](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup))
-- **Freighter Wallet Extension**
-- **yt-dlp** (for URL video download pipeline)
-- **Python 3.x** (yt-dlp dependency)
+- Node.js v18+ & npm
+- Rust with `wasm32-unknown-unknown` target
+- [Stellar CLI](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup)
+- [Freighter Wallet](https://freighter.app/)
 
-### Smart Contract Deployment
+### Deploy Contract
 
 ```bash
 cd contract
 stellar contract build
-
 stellar network add testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
-
 stellar keys generate deployer --network testnet --fund
-
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/video_verification.wasm \
-  --source deployer \
-  --network testnet
+  --source deployer --network testnet
+# Save the returned Contract ID
 ```
 
-Save the returned **Contract ID** for frontend configuration.
-
-### Frontend Launch
+### Run Frontend
 
 ```bash
 cd frontend
-
-# Configure environment
-cat > .env.local << EOF
-NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID
-NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
-EOF
-
-npm install
-npm run dev
+echo "NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID" > .env.local
+echo "NEXT_PUBLIC_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org" >> .env.local
+npm install && npm run dev
 ```
 
 ---
 
-## Monorepo Structure
+## Security & Limitations
+
+- **Content integrity:** SHA-256 guarantees tamper detection
+- **Immutability:** Stellar consensus + write-once contract
+- **Privacy:** No raw video stored on-chain
+- **AI is probabilistic:** Confidence scores are estimates, not ground truth
+- **Platform re-encoding:** Same visual content may produce different hashes after re-encode
+- ⚠️ Testnet keys must **never** be reused on mainnet
+
+→ Full security model, threat architecture, key rotation: [SECURITY.md](SECURITY.md)
+
+---
+
+## Project Structure
 
 ```
 block_chain_project/
 ├── contract/               # Soroban smart contract (Rust)
 │   ├── src/lib.rs          # Contract logic
-│   ├── Cargo.toml          # Rust dependencies
-│   └── target/             # Compiled WASM binary
+│   └── README.md           # Full contract API docs
 ├── frontend/               # Next.js 14 application
 │   ├── app/                # App Router pages
 │   ├── components/         # UI components
-│   ├── lib/                # Core logic
-│   │   ├── hash.ts         # Local file SHA-256 hashing
-│   │   ├── urlHash.ts      # URL canonicalization
-│   │   ├── soroban.ts      # Stellar contract interaction
-│   │   ├── mockAi.ts       # AI forensic engine
-│   │   └── useWallet.ts    # Freighter wallet hook
-│   └── .env.local          # Contract ID + RPC URL
-└── README.md               # This document
+│   └── lib/                # Core modules (hash, soroban, wallet)
+├── docs/
+│   └── experiments.md      # Download determinism experiments
+├── SECURITY.md             # Security model & key rotation
+└── README.md               # ← You are here
 ```
 
 ---
 
-## Key Rotation Policy
+## Contributing
 
-> [!WARNING]
-> **Testnet → Mainnet Migration:**
-> - **NEVER** reuse testnet Stellar keys on mainnet
-> - Generate fresh keys using `stellar keys generate --network mainnet`
-> - Store mainnet keys in secure vaults (AWS Secrets Manager, HashiCorp Vault)
-> - **NEVER** commit mainnet keys to version control
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit changes (`git commit -m 'feat: add my feature'`)
+4. Push to branch (`git push origin feature/my-feature`)
+5. Open a Pull Request
 
 ---
 
 ## Developed by
 
-**Lead Researcher:** [Tunahan Türker Ertürk](https://www.linkedin.com/in/tunahanturkererturk/)
+**Tunahan Türker Ertürk** — [LinkedIn](https://www.linkedin.com/in/tunahanturkererturk/)
 
----
+## License
 
-© 2026 AuthentiScan Lab. Content-Based Identity. Immutable Proof. Stellar-Anchored Trust.
+MIT — see [LICENSE](LICENSE) for details.
