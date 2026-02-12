@@ -255,15 +255,19 @@ export default function Home() {
               <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
               <VerificationHistory />
             </div>
-            <div className="glass-card" style={{ padding: '32px', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 100%)' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '950', color: 'white', marginBottom: '20px', letterSpacing: '1px' }}>CONTENT_IDENTITY_MODEL</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <FeatureItem icon="🔐" title="Hash = Identity" desc="SHA-256 of video bytes. Not the URL, not the filename — the content itself." />
-                <FeatureItem icon="📎" title="URL = Metadata" desc="URLs are references, not identity. Same video at different URLs = same hash." />
-                <FeatureItem icon="⚡" title="Deterministic" desc="Same bytes in → same hash out. Cryptographically guaranteed. Always." />
-                <FeatureItem icon="🔗" title="Immutable Anchor" desc="Content hash + AI result written to Stellar. Write-once. No update. No delete." />
-              </div>
-            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Content Identity Model — Full Width Band */}
+      <div style={{ borderTop: '1px solid rgba(255, 106, 0, 0.15)', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 60%)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 60px' }}>
+          <h3 style={{ fontSize: '11px', fontWeight: '950', color: 'var(--brand-orange)', marginBottom: '32px', letterSpacing: '3px', textAlign: 'center' }}>CONTENT_IDENTITY_MODEL</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px' }}>
+            <FeatureItem icon="🔐" title="Hash = Identity" desc="SHA-256 of video bytes. Not the URL, not the filename — the content itself." />
+            <FeatureItem icon="📎" title="URL = Metadata" desc="URLs are references, not identity. Same video at different URLs = same hash." />
+            <FeatureItem icon="⚡" title="Deterministic" desc="Same bytes in → same hash out. Cryptographically guaranteed. Always." />
+            <FeatureItem icon="🔗" title="Immutable Anchor" desc="Content hash + AI result written to Stellar. Write-once. No update. No delete." />
           </div>
         </div>
       </div>
