@@ -189,6 +189,29 @@ export async function submitVerification(
             console.warn('Could not extract recordId from tx result:', e);
         }
 
+        // CRITICAL: Persist the submitted hash to localStorage
+        // URL videos may generate different hashes on re-download due to metadata changes.
+        // By saving the exact hash that was submitted to the blockchain,
+        // we can use it for re-queries instead of re-hashing the video.
+        try {
+            const submittedVerifications = JSON.parse(
+                localStorage.getItem('authentiscan_submitted') || '[]'
+            );
+            submittedVerifications.push({
+                videoHash,
+                recordId,
+                txHash,
+                timestamp: Date.now(),
+                walletAddress,
+            });
+            // Keep only last 50 entries
+            const trimmed = submittedVerifications.slice(-50);
+            localStorage.setItem('authentiscan_submitted', JSON.stringify(trimmed));
+            console.log('[submitVerification] Saved hash to localStorage:', videoHash);
+        } catch (e) {
+            console.warn('Could not save to localStorage:', e);
+        }
+
         return { txHash, recordId };
     } else {
         console.error('Transaction failed:', getResponse);
@@ -207,7 +230,7 @@ export async function submitVerification(
  */
 export async function getVerification(
     videoHash: string,
-    callerAddress: string, // Needed for RPC simulation fee payers
+    callerAddress: string,
 ): Promise<VerificationRecord | null> {
 
     if (!CONTRACT_ID) {
@@ -216,16 +239,16 @@ export async function getVerification(
 
     const contract = new Contract(CONTRACT_ID);
     const account = await server.getAccount(callerAddress);
+    const videoHashScVal = hashToScVal(videoHash);
+    const callerScVal = new Address(callerAddress).toScVal();
 
     const tx = new TransactionBuilder(account, {
         fee: '100',
         networkPassphrase: NETWORK_PASSPHRASE,
     })
         .addOperation(
-            contract.call(
-                'get_verification',
-                hashToScVal(videoHash),
-            ),
+            // Deployed contract signature: get_verification(env, video_hash, submitter)
+            contract.call('get_verification', videoHashScVal, callerScVal),
         )
         .setTimeout(30)
         .build();
@@ -233,23 +256,15 @@ export async function getVerification(
     const simulated = await server.simulateTransaction(tx);
 
     if (rpc.Api.isSimulationError(simulated)) {
-        // Simulation error — record probably doesn't exist
-        console.log('get_verification simulation error (likely not found)');
+        const errorResult = simulated as rpc.Api.SimulateTransactionErrorResponse;
+        console.log('[getVerification] simulation error:', errorResult.error?.substring(0, 120));
         return null;
     }
 
-    // Simülasyon sonucundan dönüş değerini çıkar
-    // Extract return value from simulation result
     const successResult = simulated as rpc.Api.SimulateTransactionSuccessResponse;
     const retval = successResult.result?.retval;
 
-    if (!retval) {
-        return null;
-    }
-
-    // Contract returns Option<VerificationRecord>
-    // scvVoid = None, scvMap = Some(record)
-    if (retval.switch().name === 'scvVoid') {
+    if (!retval || retval.switch().name === 'scvVoid') {
         return null;
     }
 
@@ -332,78 +347,4 @@ export async function getVerificationById(
     // to support ID-based lookup
     console.warn('[getVerificationById] Not implemented - contract needs get_verification_by_id function');
     return null;
-}
-
-/**
- * Get latest N verifications from events
- * More reliable than hash-based queries for URL videos
- */
-export async function getLatestVerifications(limit: number = 10): Promise<VerificationRecord[]> {
-    const events = await getLatestEvents();
-
-    // Events contain: recordId, videoHash, submitter
-    // We can display these without full record details
-    return events.map(event => ({
-        record_id: event.recordId,
-        video_hash: event.videoHash,
-        submitter: event.submitter,
-        is_ai_generated: false, // Not available in event
-        confidence_score: 0,     // Not available in event
-        timestamp: 0,            // Use ledger timestamp if needed
-    }));
-}
-/**
- * Fetch the latest 'submit' events from the contract
- * Acts as a real-time listener for the frontend
- */
-export async function getLatestEvents() {
-    if (!CONTRACT_ID) return [];
-
-    try {
-        const latestLedgerResponse = await server.getLatestLedger();
-        // Look back ~17280 ledgers (~24 hours) to cover full Stellar event retention
-        const startLedger = Math.max(0, latestLedgerResponse.sequence - 17280);
-
-        console.log('[getLatestEvents] Fetching events...');
-        console.log('[getLatestEvents] Latest ledger:', latestLedgerResponse.sequence);
-        console.log('[getLatestEvents] Start ledger:', startLedger);
-        console.log('[getLatestEvents] Contract ID:', CONTRACT_ID);
-
-        const response = await server.getEvents({
-            startLedger,
-            filters: [
-                {
-                    type: 'contract',
-                    contractIds: [CONTRACT_ID],
-                    // Remove topic filter - it's causing issues
-                    // Contract events are filtered by contractId only
-                }
-            ],
-            limit: 10
-        });
-
-        console.log('[getLatestEvents] Response:', response);
-        console.log('[getLatestEvents] Events count:', response.events.length);
-
-        if (response.events.length > 0) {
-            console.log('[getLatestEvents] First event:', response.events[0]);
-        }
-
-        return response.events.map(event => {
-            console.log('[getLatestEvents] Processing event:', event);
-            const body = xdr.ScVal.fromXDR(event.value as unknown as string, 'base64');
-            const data = scValToNative(body);
-            console.log('[getLatestEvents] Event data:', data);
-            return {
-                id: event.id,
-                ledger: event.ledger,
-                recordId: Number(data[0]),
-                videoHash: Buffer.from(data[1]).toString('hex'),
-                submitter: data[2].toString()
-            };
-        });
-    } catch (error) {
-        console.error('Error fetching events:', error);
-        return [];
-    }
 }

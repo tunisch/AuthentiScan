@@ -28,7 +28,32 @@ export default function VerificationQuery({ videoHash, walletAddress, refreshTri
         if (!videoHash || !walletAddress) return;
         setIsLoading(true);
         try {
-            const result = await getVerification(videoHash, walletAddress);
+            // First: try with current hash
+            let result = await getVerification(videoHash, walletAddress);
+
+            // Second: if not found, try with saved hashes from localStorage
+            if (!result) {
+                console.log('[VerificationQuery] Hash query failed, checking localStorage...');
+                try {
+                    const saved = JSON.parse(localStorage.getItem('authentiscan_submitted') || '[]');
+                    // Find the most recent submission for this wallet
+                    const matching = saved.filter((s: any) => s.walletAddress === walletAddress);
+
+                    for (const entry of matching.reverse()) {
+                        if (entry.videoHash !== videoHash) {
+                            console.log('[VerificationQuery] Trying saved hash:', entry.videoHash);
+                            result = await getVerification(entry.videoHash, walletAddress);
+                            if (result) {
+                                console.log('[VerificationQuery] ✅ Found record with saved hash!');
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[VerificationQuery] localStorage lookup failed:', e);
+                }
+            }
+
             setRecord(result);
         } catch (err) {
             console.error(err);

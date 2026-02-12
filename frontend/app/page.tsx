@@ -5,7 +5,7 @@ import VideoUpload from '@/components/VideoUpload';
 import AnalysisResult from '@/components/AnalysisResult';
 import SubmitVerification from '@/components/SubmitVerification';
 import VerificationQuery from '@/components/VerificationQuery';
-import RealTimeFeed from '@/components/RealTimeFeed';
+import VerificationHistory from '@/components/VerificationHistory';
 import { useWallet } from '@/lib/useWallet';
 
 interface HistoryItem {
@@ -49,33 +49,16 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleAnalysisComplete = (hash: string, result: any) => {
-    setVideoHash(hash);
-    setAnalysisResult(result);
-    setCurrentStep(1);
-  };
-
   const [lastRecordId, setLastRecordId] = useState<number | null>(null);
 
   const handleVerificationSubmitted = (recordId?: number) => {
     setRefreshTrigger((prev) => prev + 1);
-    setCurrentStep(2);
+    setCurrentStep(4); // 4 = all steps completed (AUDIT done)
 
     // Store record_id for fallback display
     if (recordId) {
       setLastRecordId(recordId);
     }
-
-    const newItem: HistoryItem = {
-      id: Date.now().toString(),
-      hash: videoHash || '',
-      is_ai_generated: analysisResult?.is_ai_generated || false,
-      confidence_score: analysisResult?.confidence_score || 0,
-      timestamp: Date.now(),
-    };
-    const updated = [newItem, ...history].slice(0, 10);
-    setHistory(updated);
-    localStorage.setItem('authentiscan_history', JSON.stringify(updated));
   };
 
   const handleReset = () => {
@@ -189,7 +172,7 @@ export default function Home() {
           <StepItem index={1} label="Upload" status={currentStep >= 1 ? 'completed' : currentStep === 0 ? 'active' : 'pending'} />
           <StepItem index={2} label="Analysis" status={currentStep >= 2 ? 'completed' : currentStep === 1 ? 'active' : 'pending'} />
           <StepItem index={3} label="Anchor" status={currentStep >= 3 ? 'completed' : currentStep === 2 ? 'active' : 'pending'} />
-          <StepItem index={4} label="Audit" status={currentStep === 3 ? 'active' : 'pending'} />
+          <StepItem index={4} label="Audit" status={currentStep >= 4 ? 'completed' : currentStep === 3 ? 'active' : 'pending'} />
         </div>
       </div>
 
@@ -213,7 +196,7 @@ export default function Home() {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px', alignItems: 'start' }}>
               <VerificationQuery videoHash={videoHash} walletAddress={address} refreshTrigger={refreshTrigger} lastRecordId={lastRecordId} />
-              <RealTimeFeed />
+              <VerificationHistory />
             </div>
             <div className="glass-card" style={{ padding: '40px', background: 'linear-gradient(180deg, rgba(255,106,0,0.03) 0%, rgba(11,15,20,0) 100%)' }}>
               <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '24px' }}>Why Anchoring Matters</h3>
